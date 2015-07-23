@@ -93,13 +93,15 @@ acl_check_access_int4_current_user(PG_FUNCTION_ARGS)
 {
 	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
 	uint32			mask = PG_GETARG_UINT32(1);
+	bool			implicit_allow = PG_GETARG_BOOL(2);
 	Oid				who;
 
 	who = GetUserId();
 
 	PG_RETURN_UINT32(check_access(acl, ACL_TYPE_LENGTH, ACL_TYPE_ALIGNMENT,
 								  extract_acl_entry_base, mask,
-								  (intptr_t) who, who_matches));
+								  (intptr_t) who, who_matches,
+								  implicit_allow));
 }
 
 Datum
@@ -107,6 +109,7 @@ acl_check_access_text_current_user(PG_FUNCTION_ARGS)
 {
 	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
 	text		   *mask = PG_GETARG_TEXT_P(1);
+	bool			implicit_allow = PG_GETARG_BOOL(2);
 	Oid				who;
 
 	who = GetUserId();
@@ -114,7 +117,8 @@ acl_check_access_text_current_user(PG_FUNCTION_ARGS)
 	PG_RETURN_TEXT_P(check_access_text_mask(acl, ACL_TYPE_LENGTH,
 											ACL_TYPE_ALIGNMENT,
 											extract_acl_entry_base, mask,
-											(intptr_t) who, who_matches));
+											(intptr_t) who, who_matches,
+											implicit_allow));
 }
 
 Datum
@@ -123,10 +127,12 @@ acl_check_access_int4_oid(PG_FUNCTION_ARGS)
 	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
 	uint32			mask = PG_GETARG_UINT32(1);
 	Oid				who = PG_GETARG_OID(2);
+	bool			implicit_allow = PG_GETARG_BOOL(3);
 
 	PG_RETURN_UINT32(check_access(acl, ACL_TYPE_LENGTH, ACL_TYPE_ALIGNMENT,
 								  extract_acl_entry_base, mask,
-								  (intptr_t) who, who_matches));
+								  (intptr_t) who, who_matches,
+								  implicit_allow));
 }
 
 Datum
@@ -135,11 +141,13 @@ acl_check_access_text_oid(PG_FUNCTION_ARGS)
 	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
 	text		   *mask = PG_GETARG_TEXT_P(1);
 	Oid				who = PG_GETARG_OID(2);
+	bool			implicit_allow = PG_GETARG_BOOL(3);
 
 	PG_RETURN_TEXT_P(check_access_text_mask(acl, ACL_TYPE_LENGTH,
 											ACL_TYPE_ALIGNMENT,
 											extract_acl_entry_base, mask,
-											(intptr_t) who, who_matches));
+											(intptr_t) who, who_matches,
+											implicit_allow));
 }
 
 Datum
@@ -148,13 +156,15 @@ acl_check_access_int4_name(PG_FUNCTION_ARGS)
 	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
 	uint32			mask = PG_GETARG_UINT32(1);
 	Name			rolename = PG_GETARG_NAME(2);
+	bool			implicit_allow = PG_GETARG_BOOL(3);
 	Oid				who;
 
 	who = get_role_oid(NameStr(*rolename), false);
 
 	PG_RETURN_UINT32(check_access(acl, ACL_TYPE_LENGTH, ACL_TYPE_ALIGNMENT,
 								  extract_acl_entry_base, mask,
-								  (intptr_t) who, who_matches));
+								  (intptr_t) who, who_matches,
+								  implicit_allow));
 }
 
 Datum
@@ -163,6 +173,7 @@ acl_check_access_text_name(PG_FUNCTION_ARGS)
 	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
 	text		   *mask = PG_GETARG_TEXT_P(1);
 	Name			rolename = PG_GETARG_NAME(2);
+	bool			implicit_allow = PG_GETARG_BOOL(3);
 	Oid				who;
 
 	who = get_role_oid(NameStr(*rolename), false);
@@ -170,7 +181,8 @@ acl_check_access_text_name(PG_FUNCTION_ARGS)
 	PG_RETURN_TEXT_P(check_access_text_mask(acl, ACL_TYPE_LENGTH,
 											ACL_TYPE_ALIGNMENT,
 											extract_acl_entry_base, mask,
-											(intptr_t) who, who_matches));
+											(intptr_t) who, who_matches,
+											implicit_allow));
 }
 
 static const char *

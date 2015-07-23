@@ -257,7 +257,8 @@ uint32
 check_access(const ArrayType *acl, int16 typlen, char typalign,
 			 AclEntryBase * (*extract_acl_entry_base)(void *acl_entry),
 			 uint32 mask, intptr_t who,
-			 bool (*who_matches)(void *acl_entry, intptr_t who))
+			 bool (*who_matches)(void *acl_entry, intptr_t who),
+			 bool implicit_allow)
 {
 	uint32		granted = 0;
 	int			i;
@@ -297,6 +298,9 @@ check_access(const ArrayType *acl, int16 typlen, char typalign,
 		}
 	}
 
+	if (implicit_allow)
+		granted |= mask;
+
 	return granted;
 }
 
@@ -305,7 +309,8 @@ check_access_text_mask(const ArrayType *acl, int16 typlen,
 					   char typalign,
 					   AclEntryBase * (*extract_acl_entry_base)(void *acl_entry),
 					   text *text_mask, intptr_t who,
-					   bool (*who_matches)(void *acl_entry, intptr_t who))
+					   bool (*who_matches)(void *acl_entry, intptr_t who),
+					   bool implicit_allow)
 {
 	char	   *mask_str;
 	int			mask_len;
@@ -322,7 +327,7 @@ check_access_text_mask(const ArrayType *acl, int16 typlen,
 		mask |= parse_mask_char(*mask_str++);
 
 	granted = check_access(acl, typlen, typalign, extract_acl_entry_base,
-						   mask, who, who_matches);
+						   mask, who, who_matches, implicit_allow);
 
 	out = makeStringInfo();
 	format_mask(out, granted, ace_mask_chars);

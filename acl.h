@@ -52,12 +52,14 @@ void format_acl_entry(StringInfo out, void *opaque,
 uint32 check_access(const ArrayType *acl, int16 typlen, char typalign,
 					AclEntryBase * (*extract_acl_entry_base)(void *acl_entry),
 					uint32 mask, intptr_t who,
-					bool (*who_matches)(void *acl_entry, intptr_t who));
+					bool (*who_matches)(void *acl_entry, intptr_t who),
+					bool implicit_allow);
 
 text *check_access_text_mask(const ArrayType *acl, int16 typlen,
 							 char typalign,
 							 AclEntryBase * (*extract_acl_entry_base)(void *acl_entry),
 							 text *text_mask, intptr_t who,
-							 bool (*who_matches)(void *acl_entry, intptr_t who));
+							 bool (*who_matches)(void *acl_entry, intptr_t who),
+							 bool implicit_allow);
 
 #endif

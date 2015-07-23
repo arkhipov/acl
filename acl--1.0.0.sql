@@ -22,47 +22,47 @@ CREATE TYPE ace (
 
 COMMENT ON TYPE ace IS 'access control list entry';
 
-CREATE FUNCTION acl_check_access(ace[], text)
+CREATE FUNCTION acl_check_access(ace[], text, bool)
 RETURNS text
 AS 'MODULE_PATHNAME', 'acl_check_access_text_current_user'
 LANGUAGE C STRICT IMMUTABLE;
 
-COMMENT ON FUNCTION acl_check_access(ace[], text) IS 'determine if an ACL grants a specified set of permissions to the current user';
+COMMENT ON FUNCTION acl_check_access(ace[], text, bool) IS 'determine if an ACL grants a specified set of permissions to the current user';
 
-CREATE FUNCTION acl_check_access(ace[], int4)
+CREATE FUNCTION acl_check_access(ace[], int4, bool)
 RETURNS int4
 AS 'MODULE_PATHNAME', 'acl_check_access_int4_current_user'
 LANGUAGE C STRICT IMMUTABLE;
 
-COMMENT ON FUNCTION acl_check_access(ace[], int4) IS 'determine if an ACL grants a specified set of permissions to the current user';
+COMMENT ON FUNCTION acl_check_access(ace[], int4, bool) IS 'determine if an ACL grants a specified set of permissions to the current user';
 
-CREATE FUNCTION acl_check_access(ace[], text, oid)
+CREATE FUNCTION acl_check_access(ace[], text, oid, bool)
 RETURNS text
 AS 'MODULE_PATHNAME', 'acl_check_access_text_oid'
 LANGUAGE C STRICT IMMUTABLE;
 
-COMMENT ON FUNCTION acl_check_access(ace[], text, oid) IS 'determine if an ACL grants a specified set of permissions to the role identified by oid';
+COMMENT ON FUNCTION acl_check_access(ace[], text, oid, bool) IS 'determine if an ACL grants a specified set of permissions to the role identified by oid';
 
-CREATE FUNCTION acl_check_access(ace[], int4, oid)
+CREATE FUNCTION acl_check_access(ace[], int4, oid, bool)
 RETURNS int4
 AS 'MODULE_PATHNAME', 'acl_check_access_int4_oid'
 LANGUAGE C STRICT IMMUTABLE;
 
-COMMENT ON FUNCTION acl_check_access(ace[], int4, oid) IS 'determine if an ACL grants a specified set of permissions to the role identified by oid';
+COMMENT ON FUNCTION acl_check_access(ace[], int4, oid, bool) IS 'determine if an ACL grants a specified set of permissions to the role identified by oid';
 
-CREATE FUNCTION acl_check_access(ace[], text, name)
+CREATE FUNCTION acl_check_access(ace[], text, name, bool)
 RETURNS text
 AS 'MODULE_PATHNAME', 'acl_check_access_text_name'
 LANGUAGE C STRICT IMMUTABLE;
 
-COMMENT ON FUNCTION acl_check_access(ace[], text, name) IS 'determine if an ACL grants a specified set of permissions to the role identified by name';
+COMMENT ON FUNCTION acl_check_access(ace[], text, name, bool) IS 'determine if an ACL grants a specified set of permissions to the role identified by name';
 
-CREATE FUNCTION acl_check_access(ace[], int4, name)
+CREATE FUNCTION acl_check_access(ace[], int4, name, bool)
 RETURNS int4
 AS 'MODULE_PATHNAME', 'acl_check_access_int4_name'
 LANGUAGE C STRICT IMMUTABLE;
 
-COMMENT ON FUNCTION acl_check_access(ace[], int4, name) IS 'determine if an ACL grants a specified set of permissions to the role identified by name';
+COMMENT ON FUNCTION acl_check_access(ace[], int4, name, bool) IS 'determine if an ACL grants a specified set of permissions to the role identified by name';
 
 -- UUID-based ACE
 CREATE FUNCTION ace_uuid_in(cstring)
@@ -83,16 +83,16 @@ CREATE TYPE ace_uuid (
 
 COMMENT ON TYPE ace_uuid IS 'access control list entry (UUID-based)';
 
-CREATE FUNCTION acl_check_access(ace_uuid[], text, uuid[])
+CREATE FUNCTION acl_check_access(ace_uuid[], text, uuid[], bool)
 RETURNS text
 AS 'MODULE_PATHNAME', 'acl_uuid_check_access_text'
 LANGUAGE C STRICT IMMUTABLE;
 
-COMMENT ON FUNCTION acl_check_access(ace_uuid[], text, uuid[]) IS 'determine if an ACL grants a specified set of permissions to the principal identified by UUIDs';
+COMMENT ON FUNCTION acl_check_access(ace_uuid[], text, uuid[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by UUIDs';
 
-CREATE FUNCTION acl_check_access(ace_uuid[], int4, uuid[])
+CREATE FUNCTION acl_check_access(ace_uuid[], int4, uuid[], bool)
 RETURNS int4
 AS 'MODULE_PATHNAME', 'acl_uuid_check_access_int4'
 LANGUAGE C STRICT IMMUTABLE;
 
-COMMENT ON FUNCTION acl_check_access(ace_uuid[], int4, uuid[]) IS 'determine if an ACL grants a specified set of permissions to the principal identified by UUIDs';
+COMMENT ON FUNCTION acl_check_access(ace_uuid[], int4, uuid[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by UUIDs';

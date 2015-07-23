@@ -78,14 +78,15 @@ acl_uuid_check_access_int4(PG_FUNCTION_ARGS)
 	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
 	uint32			mask = PG_GETARG_UINT32(1);
 	ArrayType	   *who = PG_GETARG_ARRAYTYPE_P(2);
+	bool			implicit_allow = PG_GETARG_BOOL(3);
 	uint32			result;
-	ArrayIterator	array_iterator;
 
 	check_who_array(who);
 
 	result = check_access(acl, ACL_TYPE_LENGTH, ACL_TYPE_ALIGNMENT,
 						  extract_acl_entry_base, mask,
-						  (intptr_t) who, who_matches);
+						  (intptr_t) who, who_matches,
+						  implicit_allow);
 
 	PG_FREE_IF_COPY(acl, 0);
 	PG_FREE_IF_COPY(who, 1);
@@ -99,15 +100,16 @@ acl_uuid_check_access_text(PG_FUNCTION_ARGS)
 	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
 	text		   *mask = PG_GETARG_TEXT_P(1);
 	ArrayType	   *who = PG_GETARG_ARRAYTYPE_P(2);
+	bool			implicit_allow = PG_GETARG_BOOL(3);
 	text		   *result;
-	ArrayIterator	array_iterator;
 
 	check_who_array(who);
 
 	result = check_access_text_mask(acl, ACL_TYPE_LENGTH,
 									ACL_TYPE_ALIGNMENT,
 									extract_acl_entry_base, mask,
-									(intptr_t) who, who_matches);
+									(intptr_t) who, who_matches,
+									implicit_allow);
 
 	PG_FREE_IF_COPY(acl, 0);
 	PG_FREE_IF_COPY(who, 1);
@@ -165,7 +167,7 @@ who_matches(void *entry, intptr_t who)
 	bool			result = false;
 
 	entry_who = (pg_uuid_t *) ((AclEntryUUID *) entry)->who;
-	array_iterator = array_create_iterator(who, 0);
+	array_iterator = array_create_iterator((ArrayType *) who, 0);
 
 	while (array_iterate(array_iterator, &value, &isnull))
 	{

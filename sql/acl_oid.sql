@@ -38,36 +38,36 @@ select (ace::text::ace::text) ~ '#' from acl_test;
 
 -- current user
 set role 'acl_test1';
-select acl_check_access('{d//=s,a//acl_test1=sdw}'::ace[], 'sd0');
-select acl_check_access('{d//=s,a//acl_test1=sdw}'::ace[], (1 << 0) | (1 << 27) | (1 << 29))::bit(32);
-select acl_check_access('{a//acl_test1=s0,d//=sdw}'::ace[], 'sd0');
-select acl_check_access('{a//acl_test1=s0,d//=sdw}'::ace[], (1 << 0) | (1 << 27) | (1 << 29))::bit(32);
+select acl_check_access('{d//=s,a//acl_test1=sdw}'::ace[], 'sd0', false);
+select acl_check_access('{d//=s,a//acl_test1=sdw}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), false)::bit(32);
+select acl_check_access('{a//acl_test1=s0,d//=sdw}'::ace[], 'sd0', false);
+select acl_check_access('{a//acl_test1=s0,d//=sdw}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), false)::bit(32);
 reset role;
 
 set role """acl=""s,/a//acl_test1";
-select acl_check_access('{d/hpc/acl_test1=dw0,a//\"\"\"acl=\"\"s\,/a//acl_test1\"=c}'::ace[], 'c');
-select acl_check_access('{d/hpc/acl_test1=dw0,a//\"\"\"acl=\"\"s\,/a//acl_test1\"=c}'::ace[], (1 << 28))::bit(32);
+select acl_check_access('{d/hpc/acl_test1=dw0,a//\"\"\"acl=\"\"s\,/a//acl_test1\"=c}'::ace[], 'c', false);
+select acl_check_access('{d/hpc/acl_test1=dw0,a//\"\"\"acl=\"\"s\,/a//acl_test1\"=c}'::ace[], (1 << 28), false)::bit(32);
 reset role;
 
 -- name
-select acl_check_access('{d//=s,a//acl_test1=sdw}'::ace[], 'sd0', 'acl_test1');
-select acl_check_access('{d//=s,a//acl_test1=sdw}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), 'acl_test1')::bit(32);
-select acl_check_access('{a//acl_test1=s0,d//=sdw}'::ace[], 'sd0', 'acl_test1');
-select acl_check_access('{a//acl_test1=s0,d//=sdw}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), 'acl_test1')::bit(32);
-select acl_check_access('{d/hpc/acl_test1=dw0,a//\"\"\"acl=\"\"s\,/a//acl_test1\"=c}'::ace[], 'c', '"acl="s,/a//acl_test1');
-select acl_check_access('{d/hpc/acl_test1=dw0,a//\"\"\"acl=\"\"s\,/a//acl_test1\"=c}'::ace[], (1 << 28), '"acl="s,/a//acl_test1')::bit(32);
+select acl_check_access('{d//=s,a//acl_test1=sdw}'::ace[], 'sd0', 'acl_test1', false);
+select acl_check_access('{d//=s,a//acl_test1=sdw}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), 'acl_test1', false)::bit(32);
+select acl_check_access('{a//acl_test1=s0,d//=sdw}'::ace[], 'sd0', 'acl_test1', false);
+select acl_check_access('{a//acl_test1=s0,d//=sdw}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), 'acl_test1', false)::bit(32);
+select acl_check_access('{d/hpc/acl_test1=dw0,a//\"\"\"acl=\"\"s\,/a//acl_test1\"=c}'::ace[], 'c', '"acl="s,/a//acl_test1', false);
+select acl_check_access('{d/hpc/acl_test1=dw0,a//\"\"\"acl=\"\"s\,/a//acl_test1\"=c}'::ace[], (1 << 28), '"acl="s,/a//acl_test1', false)::bit(32);
 
 -- oid
-select acl_check_access('{d//=s,a//acl_test1=sdw}'::ace[], 'sd0', (select oid from pg_roles where rolname = 'acl_test1'));
-select acl_check_access('{d//=s,a//acl_test1=sdw}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), (select oid from pg_roles where rolname = 'acl_test1'))::bit(32);
-select acl_check_access('{a//acl_test1=s0,d//=sdw}'::ace[], 'sd0', (select oid from pg_roles where rolname = 'acl_test1'));
-select acl_check_access('{a//acl_test1=s0,d//=sdw}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), (select oid from pg_roles where rolname = 'acl_test1'))::bit(32);
-select acl_check_access('{d/hpc/acl_test1=dw0,a//\"\"\"acl=\"\"s\,/a//acl_test1\"=c}'::ace[], 'c', (select oid from pg_roles where rolname = '"acl="s,/a//acl_test1'));
-select acl_check_access('{d/hpc/acl_test1=dw0,a//\"\"\"acl=\"\"s\,/a//acl_test1\"=c}'::ace[], (1 << 28), (select oid from pg_roles where rolname = '"acl="s,/a//acl_test1'))::bit(32);
+select acl_check_access('{d//=s,a//acl_test1=sdw}'::ace[], 'sd0', (select oid from pg_roles where rolname = 'acl_test1'), false);
+select acl_check_access('{d//=s,a//acl_test1=sdw}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), (select oid from pg_roles where rolname = 'acl_test1'), false)::bit(32);
+select acl_check_access('{a//acl_test1=s0,d//=sdw}'::ace[], 'sd0', (select oid from pg_roles where rolname = 'acl_test1'), false);
+select acl_check_access('{a//acl_test1=s0,d//=sdw}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), (select oid from pg_roles where rolname = 'acl_test1'), false)::bit(32);
+select acl_check_access('{d/hpc/acl_test1=dw0,a//\"\"\"acl=\"\"s\,/a//acl_test1\"=c}'::ace[], 'c', (select oid from pg_roles where rolname = '"acl="s,/a//acl_test1'), false);
+select acl_check_access('{d/hpc/acl_test1=dw0,a//\"\"\"acl=\"\"s\,/a//acl_test1\"=c}'::ace[], (1 << 28), (select oid from pg_roles where rolname = '"acl="s,/a//acl_test1'), false)::bit(32);
 
 -- inherit only
-select acl_check_access('{d/i/=s,a//acl_test1=sdw}'::ace[], 'sd0', 'acl_test1');
-select acl_check_access('{d/i/=s,a//acl_test1=sdw}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), 'acl_test1')::bit(32);
+select acl_check_access('{d/i/=s,a//acl_test1=sdw}'::ace[], 'sd0', 'acl_test1', false);
+select acl_check_access('{d/i/=s,a//acl_test1=sdw}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), 'acl_test1', false)::bit(32);
 
 -- clean up
 drop user acl_test1;
