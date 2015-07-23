@@ -1,0 +1,47 @@
+{
+   "name": "acl",
+   "abstract": "Acess Control List (ACL) Extension",
+   "description": "This extension provides support for ACL type.",
+   "version": "1.0.0",
+   "release_status": "testing",
+   "maintainer": [
+      "Vladislav Arkhipov <vlad@arkhipov.ru>"
+   ],
+   "license": "bsd",
+   "provides": {
+      "acl": {
+         "abstract": "Access Control List (ACL) Extension",
+         "file": "acl--1.0.0.sql",
+         "docfile": "acl.md",
+         "version": "1.0.0"
+      }
+   },
+   "prereqs": {
+      "runtime": {
+         "requires": {
+            "PostgreSQL": ">= 9.1.0"
+         }
+      }
+   },
+   "resources": {
+      "homepage": "http://www.softus.org",
+      "repository": {
+         "url": "https://github.com/arkhipov/acl.git",
+         "web": "https://github.com/arkhipov/acl",
+         "type": "git"
+      },
+      "bugtracker": {
+         "web": "https://github.com/arkhipov/acl/issues"
+      }
+   },
+   "generated_by": "Vladislav Arkhipov",
+   "meta-spec": {
+      "version": "1.0.0",
+      "url": "http://pgxn.org/meta/spec.txt"
+   },
+   "tags": [
+      "acl",
+      "access control list",
+      "fine-grained security",
+   ]
+}

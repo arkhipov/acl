@@ -1,0 +1,5 @@
+# ACL extension
+comment = 'data type ACL'
+default_version = '1.0.0'
+module_pathname = '$libdir/acl'
+relocatable = true
