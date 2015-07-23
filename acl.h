@@ -45,9 +45,9 @@ void parse_acl_entry(const char *s, AclEntryBase *acl_entry_base,
 					 void *opaque,
 					 const char *parse_who(const char *s, void *opaque));
 
-void format_acl_entry(StringInfo out, void *acl_entry,
+void format_acl_entry(StringInfo out, void *opaque,
 					  AclEntryBase *acl_entry_base,
-					  void (*format_who)(StringInfo out, void *acl_entry));
+					  void (*format_who)(StringInfo out, void *opaque));
 
 uint32 check_access(const ArrayType *acl, int16 typlen, char typalign,
 					AclEntryBase * (*extract_acl_entry_base)(void *acl_entry),

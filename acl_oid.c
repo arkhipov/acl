@@ -46,7 +46,7 @@ typedef struct AclEntryOid
 } AclEntryOid;
 
 #define ACL_TYPE_ALIGNMENT			'i'
-#define ACL_TYPE_LENGTH				16
+#define ACL_TYPE_LENGTH				sizeof(AclEntryOid)
 
 #define PUBLIC_OID					0
 
@@ -55,7 +55,7 @@ typedef struct AclEntryOid
 #define PG_RETURN_ACL_ENTRY_P(x)	PG_RETURN_POINTER(x)
 
 static const char *parse_who(const char *s, void *opaque);
-static void format_who(StringInfo out, void *acl_entry);
+static void format_who(StringInfo out, void *opaque);
 
 static AclEntryBase *extract_acl_entry_base(void *entry);
 static bool who_matches(void *entry, intptr_t who);
@@ -66,13 +66,13 @@ Datum
 ace_in(PG_FUNCTION_ARGS)
 {
 	const char	   *s = PG_GETARG_CSTRING(0);
-	AclEntryOid	   *acl_entry;
+	AclEntryOid	   *entry;
 
-	acl_entry = palloc0(sizeof(AclEntryOid));
+	entry = palloc0(sizeof(AclEntryOid));
 
-	parse_acl_entry(s, &acl_entry->base, acl_entry, parse_who);
+	parse_acl_entry(s, &entry->base, entry, parse_who);
 
-	PG_RETURN_ACL_ENTRY_P(acl_entry);
+	PG_RETURN_ACL_ENTRY_P(entry);
 }
 
 Datum
@@ -252,10 +252,10 @@ parse_who(const char *s, void *opaque)
 }
 
 static void
-format_who(StringInfo out, void *acl_entry)
+format_who(StringInfo out, void *opaque)
 {
 	HeapTuple		htup;
-	AclEntryOid	   *entry = (AclEntryOid *) acl_entry;
+	AclEntryOid	   *entry = (AclEntryOid *) opaque;
 
 	if (entry->who == PUBLIC_OID)
 		return;

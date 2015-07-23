@@ -211,6 +211,9 @@ parse_acl_entry(const char *s, AclEntryBase *acl_entry_base,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
 				 errmsg("missing \"=\" sign")));
 
+	while (isspace((unsigned char) *s))
+		++s;
+
 	if (*s == '\0')
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
@@ -270,7 +273,7 @@ check_access(const ArrayType *acl, int16 typlen, char typalign,
 	{
 		AclEntryBase   *base = extract_acl_entry_base(entry);
 
-		/* There will probably be more ACE types in the future */
+		/* There could be more ACE types in the future */
 		if (base->type == ACE_ACCESS_ALLOWED ||
 			base->type == ACE_ACCESS_DENIED)
 		{
