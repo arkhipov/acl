@@ -50,6 +50,7 @@ cat "$dir"/test_oid.sql | sed 's/$count/'$count'/' | sed 's/$ace_count/'$ace_cou
 # UUID
 ################################################################################
 
+cat "$dir"/test_uuid.sql | sed 's/$count/'$count'/' | sed 's/$ace_count/'$ace_count'/' | "$PG_HOME"/bin/psql $psql_args
 
 # Drop database
 "$PG_HOME"/bin/dropdb $pg_args "$PG_DATABASE"
