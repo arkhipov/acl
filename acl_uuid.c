@@ -88,9 +88,6 @@ acl_uuid_check_access_int4(PG_FUNCTION_ARGS)
 						  (intptr_t) who, who_matches,
 						  implicit_allow);
 
-	PG_FREE_IF_COPY(acl, 0);
-	PG_FREE_IF_COPY(who, 1);
-
 	PG_RETURN_UINT32(result);
 }
 
@@ -110,9 +107,6 @@ acl_uuid_check_access_text(PG_FUNCTION_ARGS)
 									extract_acl_entry_base, mask,
 									(intptr_t) who, who_matches,
 									implicit_allow);
-
-	PG_FREE_IF_COPY(acl, 0);
-	PG_FREE_IF_COPY(who, 1);
 
 	PG_RETURN_TEXT_P(result);
 }
