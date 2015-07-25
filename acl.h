@@ -62,4 +62,6 @@ text *check_access_text_mask(const ArrayType *acl, int16 typlen,
 							 bool (*who_matches)(void *acl_entry, intptr_t who),
 							 bool implicit_allow);
 
+void check_who_array(ArrayType *who_array);
+
 #endif

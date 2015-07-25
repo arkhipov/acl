@@ -335,6 +335,28 @@ check_access_text_mask(const ArrayType *acl, int16 typlen,
 	return cstring_to_text(out->data);
 }
 
+void
+check_who_array(ArrayType *who_array)
+{
+	if (ARR_HASNULL(who_array))
+		ereport(ERROR,
+				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
+				 errmsg("Who array must not contain null values")));
+
+
+	if (ARR_NDIM(who_array) != 1)
+		ereport(ERROR,
+				(errcode(ERRCODE_INTERNAL_ERROR),
+				 errmsg("wrong number of dimensions of who array"),
+				 errdetail("Who array must be one dimensional.")));
+
+	if (ARR_LBOUND(who_array)[0] != 1)
+		ereport(ERROR,
+				(errcode(ERRCODE_INTERNAL_ERROR),
+				 errmsg("wrong range of who array"),
+				 errdetail("Lower bound of who array must be one.")));
+}
+
 static uint32
 parse_mask_char(char c)
 {

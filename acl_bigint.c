@@ -1,6 +1,6 @@
 /* -------------------------------------------------------------------------
  *
- * acl_uuid.c
+ * acl_bigint.c
  *
  * Copyright (c) 2015 Vladislav Arkhipov <vlad@arkhipov.ru>
  *
@@ -11,33 +11,33 @@
 
 #include "utils/array.h"
 #include "utils/builtins.h"
+#include "utils/int8.h"
 #include "utils/syscache.h"
-#include "utils/uuid.h"
 
 #include "acl.h"
 
-PG_FUNCTION_INFO_V1(ace_uuid_in);
-PG_FUNCTION_INFO_V1(ace_uuid_out);
-PG_FUNCTION_INFO_V1(acl_uuid_check_access_text);
-PG_FUNCTION_INFO_V1(acl_uuid_check_access_int4);
+PG_FUNCTION_INFO_V1(ace_bigint_in);
+PG_FUNCTION_INFO_V1(ace_bigint_out);
+PG_FUNCTION_INFO_V1(acl_bigint_check_access_text);
+PG_FUNCTION_INFO_V1(acl_bigint_check_access_int4);
 
-Datum ace_uuid_in(PG_FUNCTION_ARGS);
-Datum ace_uuid_out(PG_FUNCTION_ARGS);
-Datum acl_uuid_check_access_text(PG_FUNCTION_ARGS);
-Datum acl_uuid_check_access_int4(PG_FUNCTION_ARGS);
+Datum ace_bigint_in(PG_FUNCTION_ARGS);
+Datum ace_bigint_out(PG_FUNCTION_ARGS);
+Datum acl_bigint_check_access_text(PG_FUNCTION_ARGS);
+Datum acl_bigint_check_access_int4(PG_FUNCTION_ARGS);
 
-typedef struct AclEntryUUID
+typedef struct AclEntryBigint
 {
 	AclEntryBase 	base;
-	char			who[UUID_LEN];
-} AclEntryUUID;
+	long			who;
+} AclEntryBigint;
 
-#define ACL_TYPE_ALIGNMENT				'i'
-#define ACL_TYPE_LENGTH					sizeof(AclEntryUUID)
+#define ACL_TYPE_ALIGNMENT				'd'
+#define ACL_TYPE_LENGTH					sizeof(AclEntryBigint)
 
-#define DatumGetUUIDAclEntryP(x)		((AclEntryUUID *) DatumGetPointer(x))
-#define PG_GETARG_UUID_ACL_ENTRY_P(x)	DatumGetUUIDAclEntryP(PG_GETARG_DATUM(x))
-#define PG_RETURN_UUID_ACL_ENTRY_P(x)	PG_RETURN_POINTER(x)
+#define DatumGetBigintAclEntryP(x)		((AclEntryBigint *) DatumGetPointer(x))
+#define PG_GETARG_BIGINT_ACL_ENTRY_P(x)	DatumGetBigintAclEntryP(PG_GETARG_DATUM(x))
+#define PG_RETURN_BIGINT_ACL_ENTRY_P(x)	PG_RETURN_POINTER(x)
 
 static const char *parse_who(const char *s, void *opaque);
 static void format_who(StringInfo out, void *acl_entry);
@@ -46,22 +46,22 @@ static AclEntryBase *extract_acl_entry_base(void *entry);
 static bool who_matches(void *entry, intptr_t who);
 
 Datum
-ace_uuid_in(PG_FUNCTION_ARGS)
+ace_bigint_in(PG_FUNCTION_ARGS)
 {
 	const char	   *s = PG_GETARG_CSTRING(0);
-	AclEntryUUID   *entry;
+	AclEntryBigint *entry;
 
-	entry = palloc0(sizeof(AclEntryUUID));
+	entry = palloc0(sizeof(AclEntryBigint));
 
 	parse_acl_entry(s, &entry->base, &entry->who, parse_who);
 
-	PG_RETURN_UUID_ACL_ENTRY_P(entry);
+	PG_RETURN_BIGINT_ACL_ENTRY_P(entry);
 }
 
 Datum
-ace_uuid_out(PG_FUNCTION_ARGS)
+ace_bigint_out(PG_FUNCTION_ARGS)
 {
-	AclEntryUUID   *entry = PG_GETARG_UUID_ACL_ENTRY_P(0);
+	AclEntryBigint *entry = PG_GETARG_BIGINT_ACL_ENTRY_P(0);
 	StringInfo		out;
 
 	out = makeStringInfo();
@@ -72,7 +72,7 @@ ace_uuid_out(PG_FUNCTION_ARGS)
 }
 
 Datum
-acl_uuid_check_access_int4(PG_FUNCTION_ARGS)
+acl_bigint_check_access_int4(PG_FUNCTION_ARGS)
 {
 	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
 	uint32			mask = PG_GETARG_UINT32(1);
@@ -91,7 +91,7 @@ acl_uuid_check_access_int4(PG_FUNCTION_ARGS)
 }
 
 Datum
-acl_uuid_check_access_text(PG_FUNCTION_ARGS)
+acl_bigint_check_access_text(PG_FUNCTION_ARGS)
 {
 	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
 	text		   *mask = PG_GETARG_TEXT_P(1);
@@ -113,26 +113,24 @@ acl_uuid_check_access_text(PG_FUNCTION_ARGS)
 static const char *
 parse_who(const char *s, void *opaque)
 {
-	char			str[37];
+	char			str[21];
 	int				len = 0;
-	pg_uuid_t	   *uuid;
+	int64			who;
 
-	for (; *s != '\0' && (*s == '-' || isalnum((unsigned char) *s)); ++s)
+	for (; *s != '\0' && (*s == '-' || isdigit((unsigned char) *s)); ++s)
 	{
-		if (len >= 36)
+		if (len >= 20)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-					 errmsg("UUID too long"),
-					 errdetail("UUID must be exactly 36 characters.")));
+					 errmsg("bigint too long")));
 
 		str[len++] = *s;
 	}
 
 	str[len] = '\0';
 
-	uuid = (pg_uuid_t *) DirectFunctionCall1(uuid_in, CStringGetDatum(str));
-
-	memcpy(opaque, uuid, UUID_LEN);
+	*((int64 *) opaque) = (int64) DirectFunctionCall1(int8in,
+												   CStringGetDatum(str));
 
 	return s;
 }
@@ -140,37 +138,39 @@ parse_who(const char *s, void *opaque)
 static void
 format_who(StringInfo out, void *opaque)
 {
+	int64 who = *((int64 *) opaque);
+
 	appendStringInfoString(out, DatumGetCString(DirectFunctionCall1(
-										uuid_out, UUIDPGetDatum(opaque))));
+										int8out, Int64GetDatum(who))));
 }
 
 static AclEntryBase *
 extract_acl_entry_base(void *entry)
 {
-	return &((AclEntryUUID *) entry)->base;
+	return &((AclEntryBigint *) entry)->base;
 }
 
 static bool
 who_matches(void *entry, intptr_t who)
 {
-	pg_uuid_t	   *entry_who;
+	int64			entry_who;
 	ArrayIterator	array_iterator;
 	Datum			value;
 	bool			isnull;
 	bool			result = false;
 
-	entry_who = (pg_uuid_t *) ((AclEntryUUID *) entry)->who;
+	entry_who = ((AclEntryBigint *) entry)->who;
 	array_iterator = array_create_iterator((ArrayType *) who, 0);
 
 	while (array_iterate(array_iterator, &value, &isnull))
 	{
-		pg_uuid_t	   *uuid;
+		int64			who_value;
 
 		Assert(!isnull);
 
-		uuid = DatumGetUUIDP(value);
+		who_value = DatumGetInt64(value);
 
-		if (memcmp(entry_who, uuid, UUID_LEN) == 0)
+		if (entry_who == who_value)
 		{
 			result = true;
 			break;
