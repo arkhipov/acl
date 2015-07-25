@@ -12,6 +12,11 @@ if [[ -z $ace_count ]]; then
   ace_count=20
 fi
 
+unique_aces="$3"
+if [[ -z $unique_aces ]]; then
+  unique_aces=1000
+fi
+
 if [[ -z $PG_HOME ]]; then
   PG_HOME=$(dirname $(pg_config --bindir))
   if (( $? != 0 )); then
@@ -44,13 +49,19 @@ fi
 # OID
 ################################################################################
 
-cat "$dir"/test_oid.sql | sed 's/$count/'$count'/' | sed 's/$ace_count/'$ace_count'/' | "$PG_HOME"/bin/psql $psql_args
+cat "$dir"/test_oid.sql | sed 's/$count/'$count'/' | sed 's/$unique_aces/'$unique_aces'/' | sed 's/$ace_count/'$ace_count'/' | "$PG_HOME"/bin/psql $psql_args
 
 ################################################################################
 # UUID
 ################################################################################
 
-cat "$dir"/test_uuid.sql | sed 's/$count/'$count'/' | sed 's/$ace_count/'$ace_count'/' | "$PG_HOME"/bin/psql $psql_args
+cat "$dir"/test_uuid.sql | sed 's/$count/'$count'/' | sed 's/$unique_aces/'$unique_aces'/' | sed 's/$ace_count/'$ace_count'/' | "$PG_HOME"/bin/psql $psql_args
+
+################################################################################
+# Bigint
+################################################################################
+
+cat "$dir"/test_bigint.sql | sed 's/$count/'$count'/' | sed 's/$unique_aces/'$unique_aces'/' | sed 's/$ace_count/'$ace_count'/' | "$PG_HOME"/bin/psql $psql_args
 
 # Drop database
 "$PG_HOME"/bin/dropdb $pg_args "$PG_DATABASE"

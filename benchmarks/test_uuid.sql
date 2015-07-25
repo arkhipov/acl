@@ -9,7 +9,7 @@ from generate_series(0, 99) g1;
 
 insert into acl_data (n, acl)
 select g1, t.acl
-from generate_series(0, 999) g1
+from generate_series(0, $unique_aces - 1) g1
   cross join lateral (
     select array_agg((t.type || '//' || u.uuid || '=' || a.rights)::ace_uuid) as acl
     from generate_series(1, (random() * $ace_count + 1)::integer) g2
@@ -24,7 +24,7 @@ create view acl_test as
 with recursive x(n, acl) as (
   values(1, null::ace_uuid[])
   union all
-  select x.n + 1, (select d.acl from acl_data d where d.n = x.n % 1000)
+  select x.n + 1, (select d.acl from acl_data d where d.n = x.n % $unique_aces)
   from x
   where x.n < $count)
 select *

@@ -29,7 +29,7 @@ Datum acl_bigint_check_access_int4(PG_FUNCTION_ARGS);
 typedef struct AclEntryBigint
 {
 	AclEntryBase 	base;
-	long			who;
+	int64			who;
 } AclEntryBigint;
 
 #define ACL_TYPE_ALIGNMENT				'd'
@@ -115,7 +115,6 @@ parse_who(const char *s, void *opaque)
 {
 	char			str[21];
 	int				len = 0;
-	int64			who;
 
 	for (; *s != '\0' && (*s == '-' || isdigit((unsigned char) *s)); ++s)
 	{
