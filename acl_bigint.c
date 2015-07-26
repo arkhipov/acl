@@ -128,8 +128,8 @@ parse_who(const char *s, void *opaque)
 
 	str[len] = '\0';
 
-	*((int64 *) opaque) = (int64) DirectFunctionCall1(int8in,
-												   CStringGetDatum(str));
+	*((int64 *) opaque) = DatumGetInt64(DirectFunctionCall1(int8in,
+												   CStringGetDatum(str)));
 
 	return s;
 }

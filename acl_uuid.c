@@ -130,7 +130,8 @@ parse_who(const char *s, void *opaque)
 
 	str[len] = '\0';
 
-	uuid = (pg_uuid_t *) DirectFunctionCall1(uuid_in, CStringGetDatum(str));
+	uuid = DatumGetUUIDP(DirectFunctionCall1(uuid_in,
+											 CStringGetDatum(str)));
 
 	memcpy(opaque, uuid, UUID_LEN);
 

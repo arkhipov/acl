@@ -207,7 +207,8 @@ parse_who(const char *s, void *opaque)
 
 		name[len] = '\0';
 
-		oid = (Oid) DirectFunctionCall1(oidin, CStringGetDatum(name));
+		oid = DatumGetObjectId(DirectFunctionCall1(oidin,
+											  CStringGetDatum(name)));
 
 		acl_entry->base.flags |= ACE_INVALID;
 	}
