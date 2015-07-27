@@ -9,10 +9,8 @@
 #include "postgres.h"
 #include "fmgr.h"
 
-#include "utils/array.h"
 #include "utils/builtins.h"
 #include "utils/int8.h"
-#include "utils/syscache.h"
 
 #include "acl.h"
 
@@ -156,22 +154,18 @@ static bool
 who_matches(void *entry, intptr_t who)
 {
 	int64			entry_who;
-	ArrayIterator	array_iterator;
-	Datum			value;
-	bool			isnull;
 	bool			result = false;
+	int				i, num;
+	int64		   *ptr;
 
 	memcpy(&entry_who, ((AclEntryBigint *) entry)->who, 8);
 
-	array_iterator = array_create_iterator((ArrayType *) who, 0);
+	num = ARR_DIMS((ArrayType *) who)[0];
+	ptr = (int64 *) ARR_DATA_PTR((ArrayType *) who);
 
-	while (array_iterate(array_iterator, &value, &isnull))
+	for (i = 0; i < num; ++i)
 	{
-		int64			who_value;
-
-		Assert(!isnull);
-
-		who_value = DatumGetInt64(value);
+		int64			who_value = *ptr++;
 
 		if (entry_who == who_value)
 		{
@@ -179,8 +173,6 @@ who_matches(void *entry, intptr_t who)
 			break;
 		}
 	}
-
-	array_free_iterator(array_iterator);
 
 	return result;
 }

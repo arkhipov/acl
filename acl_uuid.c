@@ -9,9 +9,7 @@
 #include "postgres.h"
 #include "fmgr.h"
 
-#include "utils/array.h"
 #include "utils/builtins.h"
-#include "utils/syscache.h"
 #include "utils/uuid.h"
 
 #include "acl.h"
@@ -155,30 +153,27 @@ static bool
 who_matches(void *entry, intptr_t who)
 {
 	pg_uuid_t	   *entry_who;
-	ArrayIterator	array_iterator;
-	Datum			value;
-	bool			isnull;
 	bool			result = false;
+	int				i, num;
+	pg_uuid_t	   *ptr;
 
 	entry_who = (pg_uuid_t *) ((AclEntryUUID *) entry)->who;
-	array_iterator = array_create_iterator((ArrayType *) who, 0);
 
-	while (array_iterate(array_iterator, &value, &isnull))
+	num = ARR_DIMS((ArrayType *) who)[0];
+	ptr = (pg_uuid_t *) ARR_DATA_PTR((ArrayType *) who);
+
+	for (i = 0; i < num; ++i)
 	{
-		pg_uuid_t	   *uuid;
-
-		Assert(!isnull);
-
-		uuid = DatumGetUUIDP(value);
+		pg_uuid_t	   *uuid = ptr;
 
 		if (memcmp(entry_who, uuid, UUID_LEN) == 0)
 		{
 			result = true;
 			break;
 		}
-	}
 
-	array_free_iterator(array_iterator);
+		ptr = (pg_uuid_t *) ((char *) ptr + UUID_LEN);
+	}
 
 	return result;
 }
