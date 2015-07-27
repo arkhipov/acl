@@ -8,6 +8,8 @@ declare
   v_user name;
   v_role name;
 begin
+  set client_min_messages to warning;
+
   for v_n in 0..100 loop
     execute 'create role acl_test_' || v_n;
   end loop;
@@ -20,6 +22,8 @@ begin
       execute 'grant ' || quote_ident(v_role) || ' to ' || quote_ident(v_user);
     end if;
   end loop;
+
+  set client_min_messages to notice;
 end;
 $$ language plpgsql;
 
