@@ -29,10 +29,10 @@ Datum acl_bigint_check_access_int4(PG_FUNCTION_ARGS);
 typedef struct AclEntryBigint
 {
 	AclEntryBase 	base;
-	int64			who;
+	char			who[8];
 } AclEntryBigint;
 
-#define ACL_TYPE_ALIGNMENT				'd'
+#define ACL_TYPE_ALIGNMENT				'i'
 #define ACL_TYPE_LENGTH					sizeof(AclEntryBigint)
 
 #define DatumGetBigintAclEntryP(x)		((AclEntryBigint *) DatumGetPointer(x))
@@ -53,7 +53,7 @@ ace_bigint_in(PG_FUNCTION_ARGS)
 
 	entry = palloc0(sizeof(AclEntryBigint));
 
-	parse_acl_entry(s, &entry->base, &entry->who, parse_who);
+	parse_acl_entry(s, &entry->base, entry->who, parse_who);
 
 	PG_RETURN_BIGINT_ACL_ENTRY_P(entry);
 }
@@ -66,7 +66,7 @@ ace_bigint_out(PG_FUNCTION_ARGS)
 
 	out = makeStringInfo();
 
-	format_acl_entry(out, &entry->who, &entry->base, format_who);
+	format_acl_entry(out, entry->who, &entry->base, format_who);
 
 	PG_RETURN_CSTRING(out->data);
 }
@@ -115,6 +115,7 @@ parse_who(const char *s, void *opaque)
 {
 	char			str[21];
 	int				len = 0;
+	int64			who;
 
 	for (; *s != '\0' && (*s == '-' || isdigit((unsigned char) *s)); ++s)
 	{
@@ -128,8 +129,8 @@ parse_who(const char *s, void *opaque)
 
 	str[len] = '\0';
 
-	*((int64 *) opaque) = DatumGetInt64(DirectFunctionCall1(int8in,
-												   CStringGetDatum(str)));
+	who = DatumGetInt64(DirectFunctionCall1(int8in, CStringGetDatum(str)));
+	memcpy(opaque, &who, 8);
 
 	return s;
 }
@@ -137,7 +138,9 @@ parse_who(const char *s, void *opaque)
 static void
 format_who(StringInfo out, void *opaque)
 {
-	int64 who = *((int64 *) opaque);
+	int64 who;
+
+	memcpy(&who, opaque, 8);
 
 	appendStringInfoString(out, DatumGetCString(DirectFunctionCall1(
 										int8out, Int64GetDatum(who))));
@@ -158,7 +161,8 @@ who_matches(void *entry, intptr_t who)
 	bool			isnull;
 	bool			result = false;
 
-	entry_who = ((AclEntryBigint *) entry)->who;
+	memcpy(&entry_who, ((AclEntryBigint *) entry)->who, 8);
+
 	array_iterator = array_create_iterator((ArrayType *) who, 0);
 
 	while (array_iterate(array_iterator, &value, &isnull))

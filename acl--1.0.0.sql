@@ -109,8 +109,7 @@ AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT IMMUTABLE;
 
 CREATE TYPE ace_bigint (
-	INTERNALLENGTH = 24,
-	ALIGNMENT = double,
+	INTERNALLENGTH = 20,
 	INPUT = ace_bigint_in,
 	OUTPUT = ace_bigint_out
 );
