@@ -22,17 +22,22 @@ Design notes
 
 Performance benchmarks
 
-  1. PostgreSQL Roles (~ 900 ns/check)
-     10 000 000 records, ~ 50 ACEs in ACL, 100 roles, 10 000 grants
-       * Full scan. Count: 10000000, time: 00:00:29.072561
-       * ACL scan. Count: 9579999, time: 00:00:37.779871
+  1. PostgreSQL Roles (~ 2000 ns/check)
+     2 000 000 records, ~ 20 ACEs in ACL, 100 roles, 10 000 grants
+       * Full scan. Count: 2000000, time: 00:00:00.35447
+       * ACL scan. Count: 1952000, time: 00:00:04.368787
 
-  2. UUID (~ 800 ns/check)
-     10 000 000 records, ~ 50 ACEs in ACL, 100 UUIDs, user has 20 UUIDs
-       * Full scan. Count: 10000000, time: 00:00:26.843014
-       * ACL scan. Count: 7509999, time: 00:00:34.510175
+  2. int4 (~ 1800 ns/check)
+     2 000 000 records, ~ 20 ACEs in ACL, 100 int4s, user has 20 int4s
+       * Full scan. Count: 2000000, time: 00:00:00.352337
+       * ACL scan. Count: 946000, time: 00:00:03.883238
 
-  3. int8 ( ~ 800 ns/check)
-     10 000 000 records, ~ 50 ACEs in ACL, 100 int8, user has 20 int8
-       * Full scan. Count: 10000000, time: 00:00:37.472098
-       * ACL scan. Count: 2519999, time: 00:00:45.005206
+  3. int8 (~ 2000 ns/check)
+     2 000 000 records, ~ 20 ACEs in ACL, 100 int8s, user has 20 int8s
+       * Full scan. Count: 2000000, time: 00:00:00.356625
+       * ACL scan. Count: 946000, time: 00:00:04.453037
+
+  4. UUID (~ 2300 ns/check)
+     2 000 000 records, ~ 20 ACEs in ACL, 100 UUIDs, user has 20 UUIDs
+       * Full scan. Count: 2000000, time: 00:00:00.355792
+       * ACL scan. Count: 972000, time: 00:00:04.947118

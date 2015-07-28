@@ -1,4 +1,4 @@
-create table acl_data (n int8 not null primary key, acl ace_int8[]);
+create temporary table acl_data (n int8 not null primary key, acl ace_int8[]);
 
 select setseed(0);
 
@@ -14,15 +14,9 @@ from generate_series(0, $unique_aces - 1) g1
 
 vacuum full analyze acl_data;
 
-create view acl_test as
-with recursive x(n, acl) as (
-  values(1, null::ace_int8[])
-  union all
-  select x.n + 1, (select d.acl from acl_data d where d.n = x.n % $unique_aces)
-  from x
-  where x.n < $count)
-select *
-from x;
+create temporary view acl_test as
+select g, (select d.acl from acl_data d where d.n = g % $unique_aces)
+from generate_series(1, $count) g;
 
 do $$
 declare
@@ -42,6 +36,3 @@ begin
   raise notice 'ACL scan. Count: %, time: %', v_count, v_time2 - v_time1;
 end;
 $$ language plpgsql;
-
-drop view acl_test;
-drop table acl_data;

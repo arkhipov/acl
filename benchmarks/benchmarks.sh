@@ -4,7 +4,7 @@ dir=$(cd "$(dirname "$0")" && pwd)
 
 count="$1"
 if [[ -z $count ]]; then
-  count=1000000
+  count=2000000
 fi
 
 ace_count="$2"

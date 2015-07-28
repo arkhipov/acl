@@ -1,4 +1,4 @@
-create table acl_data (n bigint not null primary key, acl ace[]);
+create temporary table acl_data (n bigint not null primary key, acl ace[]);
 
 select setseed(0);
 
@@ -40,15 +40,9 @@ from generate_series(0, $unique_aces - 1) g1
 
 vacuum full analyze acl_data;
 
-create view acl_test as
-with recursive x(n, acl) as (
-  values(1, null::ace[])
-  union all
-  select x.n + 1, (select d.acl from acl_data d where d.n = x.n % $unique_aces)
-  from x
-  where x.n < $count)
-select *
-from x;
+create temporary view acl_test as
+select g, (select d.acl from acl_data d where d.n = g % $unique_aces)
+from generate_series(1, $count) g;
 
 do $$
 declare
@@ -78,6 +72,3 @@ begin
   end loop;
 end;
 $$ language plpgsql;
-
-drop view acl_test;
-drop table acl_data;
