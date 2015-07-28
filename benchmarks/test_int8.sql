@@ -7,7 +7,7 @@ select g1, t.acl
 from generate_series(0, $unique_aces - 1) g1
   cross join lateral (
     select array_agg((t.type || '//' || ((random() * g1 * g2)::int8 % 100) || '=' || a.rights)::ace_int8) as acl
-    from generate_series(1, (random() * $ace_count + 1)::integer) g2
+    from generate_series(1, (random() * $ace_count * (g1 + 1))::integer % $ace_count) g2
       cross join lateral (select t as type from unnest(string_to_array('ad', null)) t order by random() * g1 * g2 limit 1) t
       cross join lateral (select string_agg(t, '') as rights from (select t from unnest(string_to_array('scdwr0123456789ABCDEFGHIJKLMNOPQ', null)) t order by random() * g1 * g2 limit (random() * 10 + 1)::integer) t) a
   ) t;
