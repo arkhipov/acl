@@ -3,6 +3,8 @@
 MODULE_big = acl
 OBJS = acl.o acl_oid.o acl_uuid.o acl_int8.o acl_int4.o
 
+PG_CPPFLAGS=-Wall
+
 EXTENSION = acl
 DATA = acl--1.0.0.sql
 DOCS = acl.md
