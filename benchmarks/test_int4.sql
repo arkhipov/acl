@@ -26,12 +26,12 @@ declare
   v_time2 timestamptz;
 begin
   v_time1 = clock_timestamp();
-  select count(*) into v_count from acl_test;
+  select count(*) into v_count from acl_test where acl is not null;
   v_time2 = clock_timestamp();
   raise notice 'Full scan. Count: %, time: %', v_count, v_time2 - v_time1;
 
   v_time1 = clock_timestamp();
-  select count(*) into v_count from acl_test where acl_check_access(acl, 'sdr', (select array_agg(g::int4) from generate_series(1, 20) g), true) = 'sdr';
+  select count(*) into v_count from acl_test where acl_check_access(acl, '011010000000000000000000'::bit(32)::int4, (select array_agg(g::int4) from generate_series(1, 20) g), true) = '011010000000000000000000'::bit(32)::int4;
   v_time2 = clock_timestamp();
   raise notice 'ACL scan. Count: %, time: %', v_count, v_time2 - v_time1;
 end;
