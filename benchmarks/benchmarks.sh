@@ -49,18 +49,28 @@ fi
 # OID
 ################################################################################
 
+echo "Testing OID-based ACEs..."
 cat "$dir"/test_oid.sql | sed 's/$count/'$count'/' | sed 's/$unique_aces/'$unique_aces'/' | sed 's/$ace_count/'$ace_count'/' | "$PG_HOME"/bin/psql $psql_args
 
 ################################################################################
 # UUID
 ################################################################################
 
+echo "Testing UUID-based ACEs..."
 cat "$dir"/test_uuid.sql | sed 's/$count/'$count'/' | sed 's/$unique_aces/'$unique_aces'/' | sed 's/$ace_count/'$ace_count'/' | "$PG_HOME"/bin/psql $psql_args
+
+################################################################################
+# int4
+################################################################################
+
+echo "Testing int4-based ACEs..."
+cat "$dir"/test_int4.sql | sed 's/$count/'$count'/' | sed 's/$unique_aces/'$unique_aces'/' | sed 's/$ace_count/'$ace_count'/' | "$PG_HOME"/bin/psql $psql_args
 
 ################################################################################
 # int8
 ################################################################################
 
+echo "Testing int8-based ACEs..."
 cat "$dir"/test_int8.sql | sed 's/$count/'$count'/' | sed 's/$unique_aces/'$unique_aces'/' | sed 's/$ace_count/'$ace_count'/' | "$PG_HOME"/bin/psql $psql_args
 
 # Drop database
