@@ -17,7 +17,7 @@ TODO Documentation
 
 Design notes
   * invalid aces
-  * oid vs bigint vs uuid vs text
+  * oid vs int8 vs uuid vs text
   * PostgreSQL 9.5 Row-level security integration
 
 Performance benchmarks
@@ -32,7 +32,7 @@ Performance benchmarks
        * Full scan. Count: 10000000, time: 00:00:26.843014
        * ACL scan. Count: 7509999, time: 00:00:34.510175
 
-  3. Bigint ( ~ 800 ns/check)
-     10 000 000 records, ~ 50 ACEs in ACL, 100 bigints, user has 20 bigints
+  3. int8 ( ~ 800 ns/check)
+     10 000 000 records, ~ 50 ACEs in ACL, 100 int8, user has 20 int8
        * Full scan. Count: 10000000, time: 00:00:37.472098
        * ACL scan. Count: 2519999, time: 00:00:45.005206

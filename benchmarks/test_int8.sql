@@ -1,4 +1,4 @@
-create table acl_data (n bigint not null primary key, acl ace_bigint[]);
+create table acl_data (n int8 not null primary key, acl ace_int8[]);
 
 select setseed(0);
 
@@ -6,7 +6,7 @@ insert into acl_data (n, acl)
 select g1, t.acl
 from generate_series(0, $unique_aces - 1) g1
   cross join lateral (
-    select array_agg((t.type || '//' || ((random() * g1 * g2)::bigint % 100) || '=' || a.rights)::ace_bigint) as acl
+    select array_agg((t.type || '//' || ((random() * g1 * g2)::int8 % 100) || '=' || a.rights)::ace_int8) as acl
     from generate_series(1, (random() * $ace_count + 1)::integer) g2
       cross join lateral (select t as type from unnest(string_to_array('ad', null)) t order by random() * g1 * g2 limit 1) t
       cross join lateral (select string_agg(t, '') as rights from (select t from unnest(string_to_array('scdwr0123456789ABCDEFGHIJKLMNOPQ', null)) t order by random() * g1 * g2 limit (random() * 10 + 1)::integer) t) a
@@ -16,7 +16,7 @@ vacuum full analyze acl_data;
 
 create view acl_test as
 with recursive x(n, acl) as (
-  values(1, null::ace_bigint[])
+  values(1, null::ace_int8[])
   union all
   select x.n + 1, (select d.acl from acl_data d where d.n = x.n % $unique_aces)
   from x
@@ -27,7 +27,7 @@ from x;
 do $$
 declare
   v_role oid;
-  v_count bigint;
+  v_count int8;
   v_time1 timestamptz;
   v_time2 timestamptz;
 begin
@@ -37,7 +37,7 @@ begin
   raise notice 'Full scan. Count: %, time: %', v_count, v_time2 - v_time1;
 
   v_time1 = clock_timestamp();
-  select count(*) into v_count from acl_test where acl_check_access(acl, 'sdr', (select array_agg(g::bigint) from generate_series(1, 20) g), true) = 'sdr';
+  select count(*) into v_count from acl_test where acl_check_access(acl, 'sdr', (select array_agg(g::int8) from generate_series(1, 20) g), true) = 'sdr';
   v_time2 = clock_timestamp();
   raise notice 'ACL scan. Count: %, time: %', v_count, v_time2 - v_time1;
 end;

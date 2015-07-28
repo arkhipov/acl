@@ -1,6 +1,6 @@
 /* -------------------------------------------------------------------------
  *
- * acl_bigint.c
+ * acl_int8.c
  *
  * Copyright (c) 2015 Vladislav Arkhipov <vlad@arkhipov.ru>
  *
@@ -14,27 +14,27 @@
 
 #include "acl.h"
 
-PG_FUNCTION_INFO_V1(ace_bigint_in);
-PG_FUNCTION_INFO_V1(ace_bigint_out);
-PG_FUNCTION_INFO_V1(acl_bigint_check_access_text);
-PG_FUNCTION_INFO_V1(acl_bigint_check_access_int4);
+PG_FUNCTION_INFO_V1(ace_int8_in);
+PG_FUNCTION_INFO_V1(ace_int8_out);
+PG_FUNCTION_INFO_V1(acl_int8_check_access_text);
+PG_FUNCTION_INFO_V1(acl_int8_check_access_int4);
 
-Datum ace_bigint_in(PG_FUNCTION_ARGS);
-Datum ace_bigint_out(PG_FUNCTION_ARGS);
-Datum acl_bigint_check_access_text(PG_FUNCTION_ARGS);
-Datum acl_bigint_check_access_int4(PG_FUNCTION_ARGS);
+Datum ace_int8_in(PG_FUNCTION_ARGS);
+Datum ace_int8_out(PG_FUNCTION_ARGS);
+Datum acl_int8_check_access_text(PG_FUNCTION_ARGS);
+Datum acl_int8_check_access_int4(PG_FUNCTION_ARGS);
 
-typedef struct AclEntryBigint
+typedef struct AclEntryInt8
 {
 	AclEntryBase 	base;
 	char			who[8];
-} AclEntryBigint;
+} AclEntryInt8;
 
 #define ACL_TYPE_ALIGNMENT				'i'
-#define ACL_TYPE_LENGTH					sizeof(AclEntryBigint)
+#define ACL_TYPE_LENGTH					sizeof(AclEntryInt8)
 
-#define DatumGetBigintAclEntryP(x)		((AclEntryBigint *) DatumGetPointer(x))
-#define PG_GETARG_BIGINT_ACL_ENTRY_P(x)	DatumGetBigintAclEntryP(PG_GETARG_DATUM(x))
+#define DatumGetInt8AclEntryP(x)		((AclEntryInt8 *) DatumGetPointer(x))
+#define PG_GETARG_BIGINT_ACL_ENTRY_P(x)	DatumGetInt8AclEntryP(PG_GETARG_DATUM(x))
 #define PG_RETURN_BIGINT_ACL_ENTRY_P(x)	PG_RETURN_POINTER(x)
 
 static const char *parse_who(const char *s, void *opaque);
@@ -44,12 +44,12 @@ static AclEntryBase *extract_acl_entry_base(void *entry);
 static bool who_matches(void *entry, intptr_t who);
 
 Datum
-ace_bigint_in(PG_FUNCTION_ARGS)
+ace_int8_in(PG_FUNCTION_ARGS)
 {
 	const char	   *s = PG_GETARG_CSTRING(0);
-	AclEntryBigint *entry;
+	AclEntryInt8   *entry;
 
-	entry = palloc0(sizeof(AclEntryBigint));
+	entry = palloc0(sizeof(AclEntryInt8));
 
 	parse_acl_entry(s, &entry->base, entry->who, parse_who);
 
@@ -57,9 +57,9 @@ ace_bigint_in(PG_FUNCTION_ARGS)
 }
 
 Datum
-ace_bigint_out(PG_FUNCTION_ARGS)
+ace_int8_out(PG_FUNCTION_ARGS)
 {
-	AclEntryBigint *entry = PG_GETARG_BIGINT_ACL_ENTRY_P(0);
+	AclEntryInt8   *entry = PG_GETARG_BIGINT_ACL_ENTRY_P(0);
 	StringInfo		out;
 
 	out = makeStringInfo();
@@ -70,7 +70,7 @@ ace_bigint_out(PG_FUNCTION_ARGS)
 }
 
 Datum
-acl_bigint_check_access_int4(PG_FUNCTION_ARGS)
+acl_int8_check_access_int4(PG_FUNCTION_ARGS)
 {
 	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
 	uint32			mask = PG_GETARG_UINT32(1);
@@ -89,7 +89,7 @@ acl_bigint_check_access_int4(PG_FUNCTION_ARGS)
 }
 
 Datum
-acl_bigint_check_access_text(PG_FUNCTION_ARGS)
+acl_int8_check_access_text(PG_FUNCTION_ARGS)
 {
 	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
 	text		   *mask = PG_GETARG_TEXT_P(1);
@@ -120,7 +120,7 @@ parse_who(const char *s, void *opaque)
 		if (len >= 20)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-					 errmsg("bigint too long")));
+					 errmsg("int8 too long")));
 
 		str[len++] = *s;
 	}
@@ -147,7 +147,7 @@ format_who(StringInfo out, void *opaque)
 static AclEntryBase *
 extract_acl_entry_base(void *entry)
 {
-	return &((AclEntryBigint *) entry)->base;
+	return &((AclEntryInt8 *) entry)->base;
 }
 
 static bool
@@ -158,7 +158,7 @@ who_matches(void *entry, intptr_t who)
 	int				i, num;
 	int64		   *ptr;
 
-	memcpy(&entry_who, ((AclEntryBigint *) entry)->who, 8);
+	memcpy(&entry_who, ((AclEntryInt8 *) entry)->who, 8);
 
 	num = ARR_DIMS((ArrayType *) who)[0];
 	ptr = (int64 *) ARR_DATA_PTR((ArrayType *) who);

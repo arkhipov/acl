@@ -58,10 +58,10 @@ cat "$dir"/test_oid.sql | sed 's/$count/'$count'/' | sed 's/$unique_aces/'$uniqu
 cat "$dir"/test_uuid.sql | sed 's/$count/'$count'/' | sed 's/$unique_aces/'$unique_aces'/' | sed 's/$ace_count/'$ace_count'/' | "$PG_HOME"/bin/psql $psql_args
 
 ################################################################################
-# Bigint
+# int8
 ################################################################################
 
-cat "$dir"/test_bigint.sql | sed 's/$count/'$count'/' | sed 's/$unique_aces/'$unique_aces'/' | sed 's/$ace_count/'$ace_count'/' | "$PG_HOME"/bin/psql $psql_args
+cat "$dir"/test_int8.sql | sed 's/$count/'$count'/' | sed 's/$unique_aces/'$unique_aces'/' | sed 's/$ace_count/'$ace_count'/' | "$PG_HOME"/bin/psql $psql_args
 
 # Drop database
 "$PG_HOME"/bin/dropdb $pg_args "$PG_DATABASE"

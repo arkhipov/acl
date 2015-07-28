@@ -97,35 +97,35 @@ LANGUAGE C STRICT IMMUTABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace_uuid[], int4, uuid[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by UUIDs';
 
--- Bigint-based ACE
-CREATE FUNCTION ace_bigint_in(cstring)
-RETURNS ace_bigint
+-- int8-based ACE
+CREATE FUNCTION ace_int8_in(cstring)
+RETURNS ace_int8
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT IMMUTABLE;
 
-CREATE FUNCTION ace_bigint_out(ace_bigint)
+CREATE FUNCTION ace_int8_out(ace_int8)
 RETURNS cstring
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT IMMUTABLE;
 
-CREATE TYPE ace_bigint (
+CREATE TYPE ace_int8 (
 	INTERNALLENGTH = 20,
-	INPUT = ace_bigint_in,
-	OUTPUT = ace_bigint_out
+	INPUT = ace_int8_in,
+	OUTPUT = ace_int8_out
 );
 
-COMMENT ON TYPE ace_bigint IS 'access control list entry (bigint-based)';
+COMMENT ON TYPE ace_int8 IS 'access control list entry (int8-based)';
 
-CREATE FUNCTION acl_check_access(ace_bigint[], text, bigint[], bool)
+CREATE FUNCTION acl_check_access(ace_int8[], text, int8[], bool)
 RETURNS text
-AS 'MODULE_PATHNAME', 'acl_bigint_check_access_text'
+AS 'MODULE_PATHNAME', 'acl_int8_check_access_text'
 LANGUAGE C STRICT IMMUTABLE;
 
-COMMENT ON FUNCTION acl_check_access(ace_bigint[], text, bigint[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by a set of bigints';
+COMMENT ON FUNCTION acl_check_access(ace_int8[], text, int8[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by a set of int8s';
 
-CREATE FUNCTION acl_check_access(ace_bigint[], int4, bigint[], bool)
+CREATE FUNCTION acl_check_access(ace_int8[], int4, int8[], bool)
 RETURNS int4
-AS 'MODULE_PATHNAME', 'acl_bigint_check_access_int4'
+AS 'MODULE_PATHNAME', 'acl_int8_check_access_int4'
 LANGUAGE C STRICT IMMUTABLE;
 
-COMMENT ON FUNCTION acl_check_access(ace_bigint[], int4, bigint[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by a set of bigints';
+COMMENT ON FUNCTION acl_check_access(ace_int8[], int4, int8[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by a set of int8s';
