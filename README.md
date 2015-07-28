@@ -17,7 +17,7 @@ TODO Documentation
 
 Design notes
   * invalid aces
-  * oid vs int8 vs uuid vs text
+  * oid vs int4 vs int8 vs uuid vs text
   * PostgreSQL 9.5 Row-level security integration
 
 Performance benchmarks

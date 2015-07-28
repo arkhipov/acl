@@ -97,6 +97,39 @@ LANGUAGE C STRICT IMMUTABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace_uuid[], int4, uuid[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by UUIDs';
 
+-- int4-based ACE
+CREATE FUNCTION ace_int4_in(cstring)
+RETURNS ace_int4
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT IMMUTABLE;
+
+CREATE FUNCTION ace_int4_out(ace_int4)
+RETURNS cstring
+AS 'MODULE_PATHNAME'
+LANGUAGE C STRICT IMMUTABLE;
+
+CREATE TYPE ace_int4 (
+	INTERNALLENGTH = 16,
+	INPUT = ace_int4_in,
+	OUTPUT = ace_int4_out
+);
+
+COMMENT ON TYPE ace_int4 IS 'access control list entry (int4-based)';
+
+CREATE FUNCTION acl_check_access(ace_int4[], text, int4[], bool)
+RETURNS text
+AS 'MODULE_PATHNAME', 'acl_int4_check_access_text'
+LANGUAGE C STRICT IMMUTABLE;
+
+COMMENT ON FUNCTION acl_check_access(ace_int4[], text, int4[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by a set of int4s';
+
+CREATE FUNCTION acl_check_access(ace_int4[], int4, int4[], bool)
+RETURNS int4
+AS 'MODULE_PATHNAME', 'acl_int4_check_access_int4'
+LANGUAGE C STRICT IMMUTABLE;
+
+COMMENT ON FUNCTION acl_check_access(ace_int4[], int4, int4[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by a set of int4s';
+
 -- int8-based ACE
 CREATE FUNCTION ace_int8_in(cstring)
 RETURNS ace_int8

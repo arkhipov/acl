@@ -237,9 +237,9 @@ parse_acl_entry(const char *s, AclEntryBase *acl_entry_base,
 }
 
 void
-format_acl_entry(StringInfo out, void *acl_entry,
+format_acl_entry(StringInfo out, intptr_t opaque,
 				 AclEntryBase *acl_entry_base,
-				 void (*format_who)(StringInfo out, void *acl_entry))
+				 void (*format_who)(StringInfo out, intptr_t opaque))
 {
 	appendStringInfoChar(out, ace_type_chars[acl_entry_base->type - 1]);
 
@@ -247,7 +247,7 @@ format_acl_entry(StringInfo out, void *acl_entry,
 	format_mask(out, acl_entry_base->flags, ace_flag_chars);
 
 	appendStringInfoChar(out, '/');
-	format_who(out, acl_entry);
+	format_who(out, opaque);
 
 	appendStringInfoChar(out, '=');
 	format_mask(out, acl_entry_base->mask, ace_mask_chars);

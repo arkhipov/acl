@@ -55,7 +55,7 @@ typedef struct AclEntryOid
 #define PG_RETURN_ACL_ENTRY_P(x)	PG_RETURN_POINTER(x)
 
 static const char *parse_who(const char *s, void *opaque);
-static void format_who(StringInfo out, void *opaque);
+static void format_who(StringInfo out, intptr_t opaque);
 
 static AclEntryBase *extract_acl_entry_base(void *entry);
 static bool who_matches(void *entry, intptr_t who);
@@ -83,7 +83,7 @@ ace_out(PG_FUNCTION_ARGS)
 
 	out = makeStringInfo();
 
-	format_acl_entry(out, entry, &entry->base, format_who);
+	format_acl_entry(out, (intptr_t) entry, &entry->base, format_who);
 
 	PG_RETURN_CSTRING(out->data);
 }
@@ -265,7 +265,7 @@ parse_who(const char *s, void *opaque)
 }
 
 static void
-format_who(StringInfo out, void *opaque)
+format_who(StringInfo out, intptr_t opaque)
 {
 	HeapTuple		htup;
 	AclEntryOid	   *entry = (AclEntryOid *) opaque;

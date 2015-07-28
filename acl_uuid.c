@@ -38,7 +38,7 @@ typedef struct AclEntryUUID
 #define PG_RETURN_UUID_ACL_ENTRY_P(x)	PG_RETURN_POINTER(x)
 
 static const char *parse_who(const char *s, void *opaque);
-static void format_who(StringInfo out, void *acl_entry);
+static void format_who(StringInfo out, intptr_t opaque);
 
 static AclEntryBase *extract_acl_entry_base(void *entry);
 static bool who_matches(void *entry, intptr_t who);
@@ -51,7 +51,7 @@ ace_uuid_in(PG_FUNCTION_ARGS)
 
 	entry = palloc0(sizeof(AclEntryUUID));
 
-	parse_acl_entry(s, &entry->base, &entry->who, parse_who);
+	parse_acl_entry(s, &entry->base, entry->who, parse_who);
 
 	PG_RETURN_UUID_ACL_ENTRY_P(entry);
 }
@@ -64,7 +64,7 @@ ace_uuid_out(PG_FUNCTION_ARGS)
 
 	out = makeStringInfo();
 
-	format_acl_entry(out, &entry->who, &entry->base, format_who);
+	format_acl_entry(out, (intptr_t) entry->who, &entry->base, format_who);
 
 	PG_RETURN_CSTRING(out->data);
 }
@@ -137,7 +137,7 @@ parse_who(const char *s, void *opaque)
 }
 
 static void
-format_who(StringInfo out, void *opaque)
+format_who(StringInfo out, intptr_t opaque)
 {
 	appendStringInfoString(out, DatumGetCString(DirectFunctionCall1(
 										uuid_out, UUIDPGetDatum(opaque))));

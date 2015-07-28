@@ -1,6 +1,6 @@
 /* -------------------------------------------------------------------------
  *
- * acl_int8.c
+ * acl_int4.c
  *
  * Copyright (c) 2015 Vladislav Arkhipov <vlad@arkhipov.ru>
  *
@@ -10,31 +10,30 @@
 #include "fmgr.h"
 
 #include "utils/builtins.h"
-#include "utils/int8.h"
 
 #include "acl.h"
 
-PG_FUNCTION_INFO_V1(ace_int8_in);
-PG_FUNCTION_INFO_V1(ace_int8_out);
-PG_FUNCTION_INFO_V1(acl_int8_check_access_text);
-PG_FUNCTION_INFO_V1(acl_int8_check_access_int4);
+PG_FUNCTION_INFO_V1(ace_int4_in);
+PG_FUNCTION_INFO_V1(ace_int4_out);
+PG_FUNCTION_INFO_V1(acl_int4_check_access_text);
+PG_FUNCTION_INFO_V1(acl_int4_check_access_int4);
 
-Datum ace_int8_in(PG_FUNCTION_ARGS);
-Datum ace_int8_out(PG_FUNCTION_ARGS);
-Datum acl_int8_check_access_text(PG_FUNCTION_ARGS);
-Datum acl_int8_check_access_int4(PG_FUNCTION_ARGS);
+Datum ace_int4_in(PG_FUNCTION_ARGS);
+Datum ace_int4_out(PG_FUNCTION_ARGS);
+Datum acl_int4_check_access_text(PG_FUNCTION_ARGS);
+Datum acl_int4_check_access_int4(PG_FUNCTION_ARGS);
 
-typedef struct AclEntryInt8
+typedef struct AclEntryInt4
 {
 	AclEntryBase 	base;
-	char			who[8];
-} AclEntryInt8;
+	int32			who;
+} AclEntryInt4;
 
 #define ACL_TYPE_ALIGNMENT				'i'
-#define ACL_TYPE_LENGTH					sizeof(AclEntryInt8)
+#define ACL_TYPE_LENGTH					sizeof(AclEntryInt4)
 
-#define DatumGetInt8AclEntryP(x)		((AclEntryInt8 *) DatumGetPointer(x))
-#define PG_GETARG_BIGINT_ACL_ENTRY_P(x)	DatumGetInt8AclEntryP(PG_GETARG_DATUM(x))
+#define DatumGetInt4AclEntryP(x)		((AclEntryInt4 *) DatumGetPointer(x))
+#define PG_GETARG_BIGINT_ACL_ENTRY_P(x)	DatumGetInt4AclEntryP(PG_GETARG_DATUM(x))
 #define PG_RETURN_BIGINT_ACL_ENTRY_P(x)	PG_RETURN_POINTER(x)
 
 static const char *parse_who(const char *s, void *opaque);
@@ -44,33 +43,33 @@ static AclEntryBase *extract_acl_entry_base(void *entry);
 static bool who_matches(void *entry, intptr_t who);
 
 Datum
-ace_int8_in(PG_FUNCTION_ARGS)
+ace_int4_in(PG_FUNCTION_ARGS)
 {
 	const char	   *s = PG_GETARG_CSTRING(0);
-	AclEntryInt8   *entry;
+	AclEntryInt4   *entry;
 
-	entry = palloc0(sizeof(AclEntryInt8));
+	entry = palloc0(sizeof(AclEntryInt4));
 
-	parse_acl_entry(s, &entry->base, entry->who, parse_who);
+	parse_acl_entry(s, &entry->base, &entry->who, parse_who);
 
 	PG_RETURN_BIGINT_ACL_ENTRY_P(entry);
 }
 
 Datum
-ace_int8_out(PG_FUNCTION_ARGS)
+ace_int4_out(PG_FUNCTION_ARGS)
 {
-	AclEntryInt8   *entry = PG_GETARG_BIGINT_ACL_ENTRY_P(0);
+	AclEntryInt4   *entry = PG_GETARG_BIGINT_ACL_ENTRY_P(0);
 	StringInfo		out;
 
 	out = makeStringInfo();
 
-	format_acl_entry(out, (intptr_t) entry->who, &entry->base, format_who);
+	format_acl_entry(out, entry->who, &entry->base, format_who);
 
 	PG_RETURN_CSTRING(out->data);
 }
 
 Datum
-acl_int8_check_access_int4(PG_FUNCTION_ARGS)
+acl_int4_check_access_int4(PG_FUNCTION_ARGS)
 {
 	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
 	uint32			mask = PG_GETARG_UINT32(1);
@@ -89,7 +88,7 @@ acl_int8_check_access_int4(PG_FUNCTION_ARGS)
 }
 
 Datum
-acl_int8_check_access_text(PG_FUNCTION_ARGS)
+acl_int4_check_access_text(PG_FUNCTION_ARGS)
 {
 	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
 	text		   *mask = PG_GETARG_TEXT_P(1);
@@ -111,24 +110,23 @@ acl_int8_check_access_text(PG_FUNCTION_ARGS)
 static const char *
 parse_who(const char *s, void *opaque)
 {
-	char			str[21];
+	char			str[12];
 	int				len = 0;
-	int64			who;
 
 	for (; *s != '\0' && (*s == '-' || isdigit((unsigned char) *s)); ++s)
 	{
-		if (len >= 20)
+		if (len >= 11)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-					 errmsg("int8 too long")));
+					 errmsg("int4 too long")));
 
 		str[len++] = *s;
 	}
 
 	str[len] = '\0';
 
-	who = DatumGetInt64(DirectFunctionCall1(int8in, CStringGetDatum(str)));
-	memcpy(opaque, &who, 8);
+	*((int32 *) opaque) = DatumGetInt32(DirectFunctionCall1(
+											int4in, CStringGetDatum(str)));
 
 	return s;
 }
@@ -136,36 +134,32 @@ parse_who(const char *s, void *opaque)
 static void
 format_who(StringInfo out, intptr_t opaque)
 {
-	int64 who;
-
-	memcpy(&who, (void *) opaque, 8);
-
 	appendStringInfoString(out, DatumGetCString(DirectFunctionCall1(
-										int8out, Int64GetDatum(who))));
+										int4out, Int32GetDatum(opaque))));
 }
 
 static AclEntryBase *
 extract_acl_entry_base(void *entry)
 {
-	return &((AclEntryInt8 *) entry)->base;
+	return &((AclEntryInt4 *) entry)->base;
 }
 
 static bool
 who_matches(void *entry, intptr_t who)
 {
-	int64			entry_who;
+	int32			entry_who;
 	bool			result = false;
 	int				i, num;
-	int64		   *ptr;
+	int32		   *ptr;
 
-	memcpy(&entry_who, ((AclEntryInt8 *) entry)->who, 8);
+	entry_who = ((AclEntryInt4 *) entry)->who;
 
 	num = ARR_DIMS((ArrayType *) who)[0];
-	ptr = (int64 *) ARR_DATA_PTR((ArrayType *) who);
+	ptr = (int32 *) ARR_DATA_PTR((ArrayType *) who);
 
 	for (i = 0; i < num; ++i)
 	{
-		int64			who_value = *ptr++;
+		int32			who_value = *ptr++;
 
 		if (entry_who == who_value)
 		{
