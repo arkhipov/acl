@@ -4,7 +4,7 @@ create table acl_data (n bigint not null primary key, acl ace_uuid[]);
 select setseed(0);
 
 insert into uuids (n, uuid)
-select g1, uuid_generate_v4()
+select g1, ('00000000-0000-0000-0000-0000000000' || lpad(g1::text, 2, '0'))::uuid
 from generate_series(0, 99) g1;
 
 insert into acl_data (n, acl)
