@@ -14,6 +14,8 @@ So what is an ACL?
 ------------------
 TODO
 
+TODO Links to find more information on ACLs
+
 But wait! There is already the `aclitem` type. What is wrong with it?
 ---------------------------------------------------------------------
 
@@ -21,7 +23,7 @@ The `aclitem` is an internal type.  Its behaviour may change in a future
 release without notice, so do not rely on it unless you like living
 dangerously.  Besides, in a typical mid-tier/server environment, applications
 rarely have separate database accounts for each user, which means that the
-aclitem type will do little to help you secure your application.
+`aclitem` type will do little to help you secure your application.
 
 How do I set it up?
 -------------------
@@ -44,19 +46,71 @@ Once the extension is installed, you can add it to a database.
 
 How can I create an ACL?
 ------------------------
-TODO
+
+Since an ACL is a simple one-dimensional PostgreSQL array, the easiest way to
+create it is from a literal constant.
+
+```SQL
+SELECT '{a/i/postgres=rwd, d//user=r, a//=r}'::ace[];
+```
+
+ACL can have zero or more access control entries (ACE).  Every ACE has the
+following textual representation.
+
+    [type]/[flags]/[who]=[mask]
+
+There are two types of ACEs: allow and deny (`a` and `d` in a textual
+representation).  The type part is mandatory.
+
+The who part defines for which role this ACE is in effect.  There is a special
+identifier "" (empty string) representing everyone.
+
+Mask is a string value that specifies the permissions that are allowed or
+denied in an ACE.
+
+For more information on ACLs see ACL Structure section below.
 
 How can I check if the user has the permission to access the data?
 ------------------------------------------------------------------
-TODO
 
-I need custom permissions. Is this possible?
---------------------------------------------
-TODO
+Once you created an ACL, you may want to determine if it grants a current or
+any particular user a specified set of permissions.  In order to do this, use
+one of the following functions.
+
+  * acl_check_access(ace[] acl, text mask, bool implicit_allow)
+  * acl_check_access(ace[] acl, int4 mask, bool implicit_allow)
+  * acl_check_access(ace[] acl, text mask, oid role, bool implicit_allow)
+  * acl_check_access(ace[] acl, int4 mask, oid role, bool implicit_allow)
+  * acl_check_access(ace[] acl, text mask, name role, bool implicit_allow)
+  * acl_check_access(ace[] acl, int4 mask, name role, bool implicit_allow)
+
+The first two check the PostgreSQL current user against the specified ACL while
+the four others take the role to check in its third parameters.
+
+There are two types of `acl_check_` functions which take `text` or `int4` as
+the mask.  Production environments should **always** use the latter form as it
+is much more efficient.
+
+The functions return the granted permissions (either as a `text` or `int4`,
+depending on the type of their mask parameters).  If no permissions are granted,
+an empty string is returned.
+
+There is also an additional parameter `implicit_allow` which controls whether
+permission is granted if it was not explicitly granted or denied in the ACL.
+
+I need custom permissions. Is it possible?
+------------------------------------------
+
+There are 16 custom flags and 16 custom permission (see ACE Structure section
+below).  How you use them is up to you.  All the extension functions ignore
+custom flags.
 
 Does this work with PostgreSQL 9.5 row-level security?
 ------------------------------------------------------
-TODO
+
+Yes!  The Access Control List Extension integrates flawlessly with PostgreSQL
+row-level security.  All you need is to add an ACL column to your data table
+and define security policies.
 
 ```SQL
 CREATE TABLE file_system (id int, parent_id int, name text, acl ace[]);
@@ -82,6 +136,8 @@ VALUES (1, NULL, '/', '{a//=r}'),
        (2, 1, '/home', '{a//=rdw}'),
        (3, 1, '/bin', '{a//postgres=rdw}');
 ```
+
+Then connect as another user and check how it works.
 
 ```SQL
 SELECT * FROM file_system;
@@ -122,11 +178,33 @@ DELETE FROM file_system WHERE id = 10;
 
 What if my application does not rely on the PostgreSQL roles system?
 --------------------------------------------------------------------
-TODO
+
+You can still use the Access Control List Extension even if your application
+does not rely on the PostgreSQL roles system.  There are three additional ACE
+types supported.
+
+  1. ace_int4 (e.g. a/h/1985=rdw, d//-2015=s)
+  2. ace_int8 (e.g. a/h/0=w, d/oic/1234567890=AB)
+  3. ace_uuid (e.g. a//00001101-0000-1000-8000-00805F9B34FB=r)
+
+And a set of `acl_check_` functions that are slightly different from ones you
+have seen so far.
+
+  * acl_check_access(ace_int4 acl, text mask, int4[] roles, bool implicit_allow)
+  * acl_check_access(ace_int4 acl, int4 mask, int4[] roles, bool implicit_allow)
+  * acl_check_access(ace_int8 acl, text mask, int8[] roles, bool implicit_allow)
+  * acl_check_access(ace_int8 acl, int4 mask, int8[] roles, bool implicit_allow)
+  * acl_check_access(ace_uuid acl, text mask, uuid[] roles, bool implicit_allow)
+  * acl_check_access(ace_uuid acl, int4 mask, uuid[] roles, bool implicit_allow)
+
+The third parameter of these functions is an array of roles that your
+application considers the user has.
 
 How does it impact performance?
 -------------------------------
-TODO
+
+It introduces some overhead in the data reading, depending on the type and
+size of the ACLs (see Performance Benchmarks below), averaging 25%.
 
 I no longer see role names in ACEs! What happened?
 --------------------------------------------------
@@ -282,7 +360,7 @@ ACE permissions
 ACE who
 -------
 
-There is a special identifier "" (empty string) representing all principals.
+There is a special identifier "" (empty string) representing everyone.
 
 Performance Benchmarks
 ======================
