@@ -8,13 +8,25 @@ Quick Start
 
 Why do I need this?
 -------------------
-TODO
 
-So what is an ACL?
-------------------
-TODO
+You need this extension if you want to restrict access to rows in tables based
+on an authenticated user.  Access Control List (ACL) has become the de-facto
+standard for implementing a security model in modern applications.  Complex
+scenarios can be handled by using ACLs without having a complex permission
+model at the application level.
 
-TODO Links to find more information on ACLs
+This document is not intended to be a tutorial on ACLs and security and
+describes the Access Control List Extension only. You can find more information
+on ACLs on the sites below.
+
+  1. [Wikipedia: Access Control List](https://en.wikipedia.org/wiki/Access_control_list)
+  2. [MSDN: How AccessCheck Works](https://msdn.microsoft.com/en-us/library/windows/desktop/aa446683%28v=vs.85%29.aspx)
+  3. [MSDN: ACL Technology Overview](https://msdn.microsoft.com/en-us/library/ms229742%28v=vs.110%29.aspx)
+  3. [Network File System (NFS) version 4 Protocol](https://www.ietf.org/rfc/rfc3530.txt)
+  4. [POSIX Access Control Lists on Linux](http://users.suse.com/~agruen/acl/linux-acls/online/)
+
+The extension provides you with a number of special types representing ACL
+entries (ACEs) and a set of functions that check a user against an ACL.
 
 But wait! There is already the `aclitem` type. What is wrong with it?
 ---------------------------------------------------------------------
@@ -60,7 +72,7 @@ following textual representation.
     [type]/[flags]/[who]=[mask]
 
 There are two types of ACEs: allow and deny (`a` and `d` in a textual
-representation).  The type part is mandatory.
+representation).  The `type` part is mandatory.
 
 The who part defines for which role this ACE is in effect.  There is a special
 identifier "" (empty string) representing everyone.
@@ -187,8 +199,8 @@ types supported.
   2. ace_int8 (e.g. a/h/0=w, d/oic/1234567890=AB)
   3. ace_uuid (e.g. a//00001101-0000-1000-8000-00805F9B34FB=r)
 
-And a set of `acl_check_` functions that are slightly different from ones you
-have seen so far.
+And a set of `acl_check_` functions that are slightly different from the ones
+you have seen so far.
 
   * acl_check_access(ace_int4 acl, text mask, int4[] roles, bool implicit_allow)
   * acl_check_access(ace_int4 acl, int4 mask, int4[] roles, bool implicit_allow)
@@ -204,7 +216,8 @@ How does it impact performance?
 -------------------------------
 
 It introduces some overhead in the data reading, depending on the type and
-size of the ACLs (see Performance Benchmarks below), averaging 25%.
+size of the ACLs (see Performance Benchmarks below), averaging 25%.  It is way
+faster than any existing mid-tier security solution could offer.
 
 I no longer see role names in ACEs! What happened?
 --------------------------------------------------
@@ -223,7 +236,7 @@ name.  One of the most likely causes is that the role was deleted.  Since ACLs
 are usually set on a large number of objects, it would be unwise to try to
 remove invalid entries every time a role is being removed from the system, so
 these invalid ACEs remain there until you remove them manually.  Another
-imporant reason that makes us to provide a reasonable textual representation of
+imporant reason that makes us provide a reasonable textual representation of
 every ACE is that PostgreSQL uses them to make backups and restores.
 
 Are there any tutorials on how to use the extension and ACLs in an application?
