@@ -17,11 +17,13 @@ PG_FUNCTION_INFO_V1(ace_int4_in);
 PG_FUNCTION_INFO_V1(ace_int4_out);
 PG_FUNCTION_INFO_V1(acl_int4_check_access_text);
 PG_FUNCTION_INFO_V1(acl_int4_check_access_int4);
+PG_FUNCTION_INFO_V1(acl_int4_merge);
 
 Datum ace_int4_in(PG_FUNCTION_ARGS);
 Datum ace_int4_out(PG_FUNCTION_ARGS);
 Datum acl_int4_check_access_text(PG_FUNCTION_ARGS);
 Datum acl_int4_check_access_int4(PG_FUNCTION_ARGS);
+Datum acl_int4_merge(PG_FUNCTION_ARGS);
 
 typedef struct AclEntryInt4
 {
@@ -105,6 +107,46 @@ acl_int4_check_access_text(PG_FUNCTION_ARGS)
 									implicit_allow);
 
 	PG_RETURN_TEXT_P(result);
+}
+
+Datum
+acl_int4_merge(PG_FUNCTION_ARGS)
+{
+	ArrayType	   *parent;
+	ArrayType	   *child;
+	bool			container;
+	bool			deny_first;
+
+	if (PG_ARGISNULL(0))
+		parent = NULL;
+	else
+		parent = PG_GETARG_ARRAYTYPE_P(0);
+
+	if (PG_ARGISNULL(1))
+		ereport(ERROR,
+				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
+				 errmsg("ACL must be not null")));
+
+	child = PG_GETARG_ARRAYTYPE_P(1);
+
+	if (PG_ARGISNULL(2))
+		ereport(ERROR,
+				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
+				 errmsg("container argument must be not null")));
+
+	container = PG_GETARG_BOOL(2);
+
+	if (PG_ARGISNULL(3))
+		ereport(ERROR,
+				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
+				 errmsg("deny_first argument must be not null")));
+
+	deny_first = PG_GETARG_BOOL(3);
+
+	PG_RETURN_ARRAYTYPE_P(merge_acls(parent, child,
+									 ACL_TYPE_LENGTH, ACL_TYPE_ALIGNMENT,
+									 extract_acl_entry_base,
+									 container, deny_first));
 }
 
 static const char *

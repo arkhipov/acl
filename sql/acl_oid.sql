@@ -69,6 +69,69 @@ select acl_check_access('{d/hpc/acl_test1=dw0,a//\"\"\"acl=\"\"s\,/a//acl_test1\
 select acl_check_access('{d/i/=s,a//acl_test1=sdw}'::ace[], 'sd0', 'acl_test1', false);
 select acl_check_access('{d/i/=s,a//acl_test1=sdw}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), 'acl_test1', false)::bit(32);
 
+-- merge
+select acl_merge(null::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], true, false);
+select acl_merge(null::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], true, true);
+select acl_merge(null::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], false, false);
+select acl_merge(null::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], false, true);
+
+-- inheritance
+
+-- container
+
+-- no flags -> not inherited
+select acl_merge('{a//acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], true, false);
+
+-- inherit only -> not inherited
+select acl_merge('{a/i/acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], true, false);
+
+-- object inherit -> inherit only + object inherit
+select acl_merge('{a/o/acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], true, false);
+
+-- object inherit + no propagate inherit -> no inheritance
+select acl_merge('{a/op/acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], true, false);
+
+--container inherit -> container inherit
+select acl_merge('{a/c/acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], true, false);
+
+-- container inherit + no propagate inherit -> no flags
+select acl_merge('{a/cp/acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], true, false);
+
+-- container inherit + object inherit -> container inherit + object inherit + inherit only
+select acl_merge('{a/co/acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], true, false);
+
+-- container inherit + object inherit + no propagate inherit -> no flags
+select acl_merge('{a/cop/acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], true, false);
+
+-- object
+
+-- no flags -> not inherited
+select acl_merge('{a//acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], false, false);
+
+-- inherit only -> not inherited
+select acl_merge('{a/i/acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], false, false);
+
+-- object inherit -> no flags
+select acl_merge('{a/o/acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], false, false);
+
+-- object inherit + no propagate inherit -> no flags
+select acl_merge('{a/op/acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], false, false);
+
+--container inherit -> not inherited
+select acl_merge('{a/c/acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], false, false);
+
+-- container inherit + no propagate inherit -> not inherited
+select acl_merge('{a/cp/acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], false, false);
+
+-- container inherit + object inherit -> no flags
+select acl_merge('{a/co/acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], false, false);
+
+-- container inherit + object inherit + no propagate inherit -> no flags
+select acl_merge('{a/cop/acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], false, false);
+
+-- skip inherited
+select acl_merge('{a/h/acl_test1=d}'::ace[], '{a//=0,d//=1,a//=23,d//=4}'::ace[], false, false);
+
 -- clean up
 drop user acl_test1;
 drop user "acl test2";

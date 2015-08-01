@@ -64,6 +64,13 @@ LANGUAGE C STRICT STABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace[], int4, name, bool) IS 'determine if an ACL grants a specified set of permissions to the role identified by name';
 
+CREATE FUNCTION acl_merge(ace[], ace[], bool, bool)
+RETURNS ace[]
+AS 'MODULE_PATHNAME', 'acl_merge'
+LANGUAGE C IMMUTABLE;
+
+COMMENT ON FUNCTION acl_merge(ace[], ace[], bool, bool) IS 'merge two ACLs';
+
 -- UUID-based ACE
 CREATE FUNCTION ace_uuid_in(cstring)
 RETURNS ace_uuid
@@ -96,6 +103,13 @@ AS 'MODULE_PATHNAME', 'acl_uuid_check_access_int4'
 LANGUAGE C STRICT IMMUTABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace_uuid[], int4, uuid[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by UUIDs';
+
+CREATE FUNCTION acl_merge(ace_uuid[], ace_uuid[], bool, bool)
+RETURNS ace_uuid[]
+AS 'MODULE_PATHNAME', 'acl_uuid_merge'
+LANGUAGE C IMMUTABLE;
+
+COMMENT ON FUNCTION acl_merge(ace_uuid[], ace_uuid[], bool, bool) IS 'merge two ACLs';
 
 -- int4-based ACE
 CREATE FUNCTION ace_int4_in(cstring)
@@ -130,6 +144,13 @@ LANGUAGE C STRICT IMMUTABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace_int4[], int4, int4[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by a set of int4s';
 
+CREATE FUNCTION acl_merge(ace_int4[], ace_int4[], bool, bool)
+RETURNS ace_int4[]
+AS 'MODULE_PATHNAME', 'acl_int4_merge'
+LANGUAGE C IMMUTABLE;
+
+COMMENT ON FUNCTION acl_merge(ace_int4[], ace_int4[], bool, bool) IS 'merge two ACLs';
+
 -- int8-based ACE
 CREATE FUNCTION ace_int8_in(cstring)
 RETURNS ace_int8
@@ -162,3 +183,10 @@ AS 'MODULE_PATHNAME', 'acl_int8_check_access_int4'
 LANGUAGE C STRICT IMMUTABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace_int8[], int4, int8[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by a set of int8s';
+
+CREATE FUNCTION acl_merge(ace_int8[], ace_int8[], bool, bool)
+RETURNS ace_int8[]
+AS 'MODULE_PATHNAME', 'acl_int8_merge'
+LANGUAGE C IMMUTABLE;
+
+COMMENT ON FUNCTION acl_merge(ace_int8[], ace_int8[], bool, bool) IS 'merge two ACLs';

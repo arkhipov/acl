@@ -74,13 +74,29 @@ following textual representation.
 There are two types of ACEs: allow and deny (`a` and `d` in a textual
 representation).  The `type` part is mandatory.
 
-The who part defines for which role this ACE is in effect.  There is a special
-identifier "" (empty string) representing everyone.
+The `who` part defines for which role this ACE is in effect.  There is a
+special identifier `""` (empty string) representing everyone.
 
 Mask is a string value that specifies the permissions that are allowed or
 denied in an ACE.
 
 For more information on ACLs see ACL Structure section below.
+
+How can I compute an ACL based on a parent ACL?
+-----------------------------------------------
+
+ACLs are often applied to hierarchical structures.  In order to compute a new
+ACL based on a parent ACL, use the following function.
+
+  * `acl_merge(ace[] parent_acl, ace[] acl, bool container, bool deny_first)`
+
+The `container` parameter determines if the ACL is computing for a container
+object or a leaf object.
+
+The `deny_first` parameter defines if the deny ACEs must be placed first (this
+is a default behaviour for all Microsoft products).
+
+For more information on ACL flags see ACL Structure section below.
 
 How can I check if the user has the permission to access the data?
 ------------------------------------------------------------------
@@ -89,12 +105,12 @@ Once you created an ACL, you may want to determine if it grants a current or
 any particular user a specified set of permissions.  In order to do this, use
 one of the following functions.
 
-  * acl_check_access(ace[] acl, text mask, bool implicit_allow)
-  * acl_check_access(ace[] acl, int4 mask, bool implicit_allow)
-  * acl_check_access(ace[] acl, text mask, oid role, bool implicit_allow)
-  * acl_check_access(ace[] acl, int4 mask, oid role, bool implicit_allow)
-  * acl_check_access(ace[] acl, text mask, name role, bool implicit_allow)
-  * acl_check_access(ace[] acl, int4 mask, name role, bool implicit_allow)
+  * `acl_check_access(ace[] acl, text mask, bool implicit_allow)`
+  * `acl_check_access(ace[] acl, int4 mask, bool implicit_allow)`
+  * `acl_check_access(ace[] acl, text mask, oid role, bool implicit_allow)`
+  * `acl_check_access(ace[] acl, int4 mask, oid role, bool implicit_allow)`
+  * `acl_check_access(ace[] acl, text mask, name role, bool implicit_allow)`
+  * `acl_check_access(ace[] acl, int4 mask, name role, bool implicit_allow)`
 
 The first two check the PostgreSQL current user against the specified ACL while
 the four others take the role to check in its third parameters.
@@ -195,19 +211,19 @@ You can still use the Access Control List Extension even if your application
 does not rely on the PostgreSQL roles system.  There are three additional ACE
 types supported.
 
-  1. ace_int4 (e.g. a/h/1985=rdw, d//-2015=s)
-  2. ace_int8 (e.g. a/h/0=w, d/oic/1234567890=AB)
-  3. ace_uuid (e.g. a//00001101-0000-1000-8000-00805F9B34FB=r)
+  1. `ace_int4` (e.g. `a/h/1985=rdw`, `d//-2015=s`)
+  2. `ace_int8` (e.g. `a/h/0=w`, `d/oic/1234567890=AB`)
+  3. `ace_uuid` (e.g. `a//00001101-0000-1000-8000-00805F9B34FB=r`)
 
 And a set of `acl_check_` functions that are slightly different from the ones
 you have seen so far.
 
-  * acl_check_access(ace_int4 acl, text mask, int4[] roles, bool implicit_allow)
-  * acl_check_access(ace_int4 acl, int4 mask, int4[] roles, bool implicit_allow)
-  * acl_check_access(ace_int8 acl, text mask, int8[] roles, bool implicit_allow)
-  * acl_check_access(ace_int8 acl, int4 mask, int8[] roles, bool implicit_allow)
-  * acl_check_access(ace_uuid acl, text mask, uuid[] roles, bool implicit_allow)
-  * acl_check_access(ace_uuid acl, int4 mask, uuid[] roles, bool implicit_allow)
+  * `acl_check_access(ace_int4 acl, text mask, int4[] roles, bool implicit_allow)`
+  * `acl_check_access(ace_int4 acl, int4 mask, int4[] roles, bool implicit_allow)`
+  * `acl_check_access(ace_int8 acl, text mask, int8[] roles, bool implicit_allow)`
+  * `acl_check_access(ace_int8 acl, int4 mask, int8[] roles, bool implicit_allow)`
+  * `acl_check_access(ace_uuid acl, text mask, uuid[] roles, bool implicit_allow)`
+  * `acl_check_access(ace_uuid acl, int4 mask, uuid[] roles, bool implicit_allow)`
 
 The third parameter of these functions is an array of roles that your
 application considers the user has.

@@ -116,6 +116,20 @@ static uint32 parse_mask_char(char c);
 
 static void check_acl(const ArrayType *acl);
 
+static char * copy_acl_entries(char *src, char *dest, int nitems, int typlen,
+					char typalign, int *ncopied,
+					bool (*filter)(AclEntryBase *entry),
+					void (*modify_entry)(AclEntryBase *src, AclEntryBase *dest),
+					AclEntryBase * (*extract_acl_entry_base)(void *acl_entry));
+
+static bool filter_not_inherited(AclEntryBase *entry);
+static bool filter_access_denied(AclEntryBase *entry);
+static bool filter_access_allowed(AclEntryBase *entry);
+static bool filter_inherited_container(AclEntryBase *entry);
+static bool filter_inherited_object(AclEntryBase *entry);
+static void modify_inherited_container(AclEntryBase *src, AclEntryBase *dest);
+static void modify_inherited_object(AclEntryBase *src, AclEntryBase *dest);
+
 static void
 fill_inverted_map(char map[], int inverted_map[], int len, int first_index)
 {
@@ -291,11 +305,8 @@ check_access(const ArrayType *acl, int16 typlen, char typalign,
 			}
 		}
 
-		if (i != num - 1)
-		{
-			entry = att_addlength_pointer(entry, typlen, entry);
-			entry = (char *) att_align_nominal(entry, typalign);
-		}
+		entry = att_addlength_pointer(entry, typlen, entry);
+		entry = (char *) att_align_nominal(entry, typalign);
 	}
 
 	if (implicit_allow)
@@ -333,6 +344,75 @@ check_access_text_mask(const ArrayType *acl, int16 typlen,
 	format_mask(out, granted, ace_mask_chars);
 
 	return cstring_to_text(out->data);
+}
+
+ArrayType *
+merge_acls(const ArrayType *parent, const ArrayType *child,
+		   int16 typlen, char typalign,
+		   AclEntryBase * (*extract_acl_entry_base)(void *acl_entry),
+		   bool container, bool deny_first)
+{
+	ArrayType	   *result;
+	int				maxbytes;
+	int				child_items;
+	char		   *child_ptr;
+	char		   *result_ptr;
+	int				nitems = 0;
+
+	if (parent != NULL)
+		check_acl(parent);
+
+	check_acl(child);
+
+	child_items = ARR_DIMS(child)[0];
+	child_ptr = ARR_DATA_PTR(child);
+
+	maxbytes = ARR_OVERHEAD_NONULLS(1);
+	maxbytes += ARR_SIZE(child) - ARR_DATA_OFFSET(child);
+	if (parent != NULL)
+		maxbytes += ARR_SIZE(parent) - ARR_DATA_OFFSET(parent);
+
+	result = (ArrayType *) palloc0(maxbytes);
+	result->ndim = 1;
+	result->elemtype = ARR_ELEMTYPE(child);
+	ARR_LBOUND(result)[0] = 1;
+
+	result_ptr = ARR_DATA_PTR(result);
+
+	if (!deny_first)
+	{
+		result_ptr = copy_acl_entries(child_ptr, result_ptr, child_items,
+									  typlen, typalign, &nitems,
+									  filter_not_inherited, NULL,
+									  extract_acl_entry_base);
+	}
+	else
+	{
+		result_ptr = copy_acl_entries(child_ptr, result_ptr, child_items,
+									  typlen, typalign, &nitems,
+									  filter_access_denied, NULL,
+									  extract_acl_entry_base);
+		result_ptr = copy_acl_entries(child_ptr, result_ptr, child_items,
+									  typlen, typalign, &nitems,
+									  filter_access_allowed, NULL,
+									  extract_acl_entry_base);
+	}
+
+	if (parent != NULL)
+		result_ptr = copy_acl_entries(ARR_DATA_PTR(parent), result_ptr,
+									  ARR_DIMS(parent)[0], typlen, typalign,
+									  &nitems,
+									  container ? filter_inherited_container
+												: filter_inherited_object,
+									  container ? modify_inherited_container
+												: modify_inherited_object,
+									  extract_acl_entry_base);
+
+	ARR_DIMS(result)[0] = nitems;
+	SET_VARSIZE(result, ARR_OVERHEAD_NONULLS(1) +
+						(result_ptr - ARR_DATA_PTR(result)));
+
+	return result;
 }
 
 void
@@ -394,4 +474,102 @@ check_acl(const ArrayType *acl)
 		ereport(ERROR,
 				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
 				 errmsg("ACL arrays must not contain null values")));
+}
+
+static char *
+copy_acl_entries(char *src, char *dest, int nitems, int typlen, char typalign,
+				 int *ncopied, bool (*filter)(AclEntryBase *entry),
+				 void (*modify_entry)(AclEntryBase *src, AclEntryBase *dest),
+				 AclEntryBase * (*extract_acl_entry_base)(void *acl_entry))
+{
+	int			i;
+
+	for (i = 0; i < nitems; ++i)
+	{
+		AclEntryBase   *entry;
+		char		   *ptr;
+
+		ptr = att_addlength_pointer(src, typlen, src);
+
+		entry = extract_acl_entry_base(src);
+		if (filter(entry))
+		{
+			memcpy(dest, src, ptr - src);
+
+			if (modify_entry != NULL)
+			{
+				modify_entry(entry, extract_acl_entry_base(dest));
+			}
+
+			dest = att_addlength_pointer(dest, typlen, dest);
+			dest = (char *) att_align_nominal(dest, typalign);
+
+			++*ncopied;
+		}
+
+		src = (char *) att_align_nominal(ptr, typalign);
+	}
+
+	return dest;
+}
+
+static bool
+filter_not_inherited(AclEntryBase *entry)
+{
+	return (entry->flags & ACE_INHERITED) == 0;
+}
+
+static bool
+filter_access_denied(AclEntryBase *entry)
+{
+	return (entry->type == ACE_ACCESS_DENIED) &&
+		   !(entry->flags & ACE_INHERITED);
+}
+
+static bool
+filter_access_allowed(AclEntryBase *entry)
+{
+	return (entry->type == ACE_ACCESS_ALLOWED) &&
+		   !(entry->flags & ACE_INHERITED);
+}
+
+static bool
+filter_inherited_container(AclEntryBase *entry)
+{
+	if (entry->flags & ACE_NO_PROPAGATE_INHERIT)
+		return (entry->flags & ACE_CONTAINER_INHERIT) != 0;
+	else
+		return (entry->flags & ACE_OBJECT_INHERIT) ||
+			   (entry->flags & ACE_CONTAINER_INHERIT);
+}
+
+static bool
+filter_inherited_object(AclEntryBase *entry)
+{
+	return (entry->flags & ACE_OBJECT_INHERIT) != 0;
+}
+
+static void
+modify_inherited_container(AclEntryBase *src, AclEntryBase *dest)
+{
+	if (src->flags & ACE_NO_PROPAGATE_INHERIT)
+	{
+		if (src->flags & ACE_CONTAINER_INHERIT)
+			dest->flags = 0;
+	}
+	else if (src->flags & ACE_OBJECT_INHERIT)
+	{
+		dest->flags |= ACE_INHERIT_ONLY;
+	}
+
+	dest->flags |= ACE_INHERITED;
+}
+
+static void
+modify_inherited_object(AclEntryBase *src, AclEntryBase *dest)
+{
+	if (src->flags & ACE_OBJECT_INHERIT)
+		dest->flags = 0;
+
+	dest->flags |= ACE_INHERITED;
 }
