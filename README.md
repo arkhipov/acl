@@ -141,7 +141,9 @@ row-level security.  All you need is to add an ACL column to your data table
 and define security policies.
 
 ```SQL
-CREATE TABLE file_system (id int, parent_id int, name text, acl ace[]);
+CREATE TABLE file_system (id int PRIMARY KEY NOT NULL, parent_id int, is_directory bool NOT NULL, name text, acl ace[]);
+
+ALTER TABLE file_system ADD CONSTRAINT file_system_parent_fk FOREIGN KEY (parent_id) REFERENCES file_system(id);
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON file_system TO PUBLIC;
 
@@ -159,38 +161,91 @@ USING (acl_check_access(acl, 'd', false) = 'd');
 CREATE POLICY file_system_insert_policy ON file_system FOR INSERT TO PUBLIC
 WITH CHECK (acl_check_access((SELECT p.acl FROM file_system p WHERE p.id = file_system.parent_id), 'w', false) = 'w');
 
-INSERT INTO file_system(id, parent_id, name, acl)
-VALUES (1, NULL, '/', '{a//=r}'),
-       (2, 1, '/home', '{a//=rdw}'),
-       (3, 1, '/bin', '{a//postgres=rdw}');
+CREATE FUNCTION file_system_modify()
+RETURNS TRIGGER AS $$
+DECLARE
+  v_parent_acl ace[];
+BEGIN
+  v_parent_acl = (SELECT p.acl FROM file_system p WHERE p.id = NEW.parent_id);
+  IF NOT FOUND THEN
+    IF NEW.parent_id IS NULL THEN
+      -- Only a superuser can add a root directory
+      IF current_user <> 'postgres' THEN
+        RAISE EXCEPTION 'Access denied';
+      END IF;
+
+      RETURN NEW;
+    END IF;
+  END IF;
+
+  IF v_parent_acl IS NULL THEN
+    NEW.acl = NULL;
+  ELSIF NEW.acl IS NULL THEN
+    NEW.acl = v_parent_acl;
+  ELSE
+    NEW.acl = acl_merge(v_parent_acl, NEW.acl, NEW.is_directory, true);
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER file_system_insert.
+  BEFORE INSERT OR UPDATE ON file_system
+  FOR EACH ROW EXECUTE PROCEDURE file_system_modify();
+
+INSERT INTO file_system(id, parent_id, name, is_directory, acl)
+VALUES (1, NULL, '/', TRUE, '{a/c/=r}'),
+       (2, 1, '/home', TRUE, '{a//=rdw}'),
+       (3, 1, '/bin', TRUE, '{a//postgres=rdw,d//=rdw}');
+
+SELECT * FROM file_system;
+```
+
+```
+ id | parent_id | is_directory | name  |                acl
+----+-----------+--------------+-------+-----------------------------------
+  1 |           | t            | /     | {a/c/=r}
+  2 |         1 | t            | /home | {a//=dwr,a/hc/=r}
+  3 |         1 | t            | /bin  | {d//=dwr,a//postgres=dwr,a/hc/=r}
 ```
 
 Then connect as another user and check how it works.
 
 ```SQL
+SET ROLE test;
+
 SELECT * FROM file_system;
 ```
 
 ```
-id | parent_id | name  |    acl
----+-----------+-------+-----------
- 1 |           | /     | {a//=r}
- 2 |         1 | /home | {a//=dwr}
+ id | parent_id | is_directory | name  |        acl
+----+-----------+--------------+-------+-------------------
+  1 |           | t            | /     | {a/c/=r}
+  2 |         1 | t            | /home | {a//=dwr,a/hc/=r}
 ```
 
 ```SQL
-INSERT INTO file_system (id, parent_id, name, acl)
-VALUES(10, 1, '/test', '{a//=rdw}');
+INSERT INTO file_system (id, parent_id, name, is_directory, acl)
+VALUES(10, 1, '/test', TRUE, '{a//=rdw}');
 ```
 
     ERROR:  new row violates row level security policy for "file_system"
 
 ```SQL
-INSERT INTO file_system (id, parent_id, name, acl)
-VALUES(10, 2, '/home/test', '{a//=rdw}');
+INSERT INTO file_system (id, parent_id, name, is_directory, acl)
+VALUES(10, 2, '/home/test', TRUE, '{a//=rdw}');
+
+SELECT * FROM file_system;
 ```
 
-    INSERT 0 1
+```
+ id | parent_id | is_directory |    name    |        acl
+----+-----------+--------------+------------+-------------------
+  1 |           | t            | /          | {a/c/=r}
+  2 |         1 | t            | /home      | {a//=dwr,a/hc/=r}
+ 10 |         2 | t            | /home/test | {a//=dwr,a/hc/=r}
+```
 
 ```SQL
 DELETE FROM file_system WHERE id = 1;
@@ -200,9 +255,16 @@ DELETE FROM file_system WHERE id = 1;
 
 ```SQL
 DELETE FROM file_system WHERE id = 10;
+
+SELECT * FROM file_system;
 ```
 
-    DELETE 1
+```
+ id | parent_id | is_directory | name  |        acl
+----+-----------+--------------+-------+-------------------
+  1 |           | t            | /     | {a/c/=r}
+  2 |         1 | t            | /home | {a//=dwr,a/hc/=r}
+```
 
 What if my application does not rely on the PostgreSQL roles system?
 --------------------------------------------------------------------
