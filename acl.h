@@ -62,7 +62,7 @@ text *check_access_text_mask(const ArrayType *acl, int16 typlen,
 							 bool (*who_matches)(void *acl_entry, intptr_t who),
 							 bool implicit_allow);
 
-ArrayType *merge_acls(const ArrayType *parent, const ArrayType *child,
+ArrayType *merge_acls(const ArrayType *parent_acl, const ArrayType *acl,
 					  int16 typlem, char typalign,
 					  AclEntryBase * (*extract_acl_entry_base)(void *acl_entry),
 					  bool container, bool deny_first);

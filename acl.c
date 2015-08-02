@@ -347,68 +347,68 @@ check_access_text_mask(const ArrayType *acl, int16 typlen,
 }
 
 ArrayType *
-merge_acls(const ArrayType *parent, const ArrayType *child,
+merge_acls(const ArrayType *parent_acl, const ArrayType *acl,
 		   int16 typlen, char typalign,
 		   AclEntryBase * (*extract_acl_entry_base)(void *acl_entry),
 		   bool container, bool deny_first)
 {
 	ArrayType	   *result;
 	int				maxbytes;
-	int				child_items;
-	char		   *child_ptr;
+	int				items;
+	char		   *ptr;
 	char		   *result_ptr;
-	int				nitems = 0;
+	int				result_items = 0;
 
-	if (parent != NULL)
-		check_acl(parent);
+	if (parent_acl != NULL)
+		check_acl(parent_acl);
 
-	check_acl(child);
+	check_acl(acl);
 
-	child_items = ARR_DIMS(child)[0];
-	child_ptr = ARR_DATA_PTR(child);
+	items = ARR_DIMS(acl)[0];
+	ptr = ARR_DATA_PTR(acl);
 
 	maxbytes = ARR_OVERHEAD_NONULLS(1);
-	maxbytes += ARR_SIZE(child) - ARR_DATA_OFFSET(child);
-	if (parent != NULL)
-		maxbytes += ARR_SIZE(parent) - ARR_DATA_OFFSET(parent);
+	maxbytes += ARR_SIZE(acl) - ARR_DATA_OFFSET(acl);
+	if (parent_acl != NULL)
+		maxbytes += ARR_SIZE(parent_acl) - ARR_DATA_OFFSET(parent_acl);
 
 	result = (ArrayType *) palloc0(maxbytes);
 	result->ndim = 1;
-	result->elemtype = ARR_ELEMTYPE(child);
+	result->elemtype = ARR_ELEMTYPE(acl);
 	ARR_LBOUND(result)[0] = 1;
 
 	result_ptr = ARR_DATA_PTR(result);
 
 	if (!deny_first)
 	{
-		result_ptr = copy_acl_entries(child_ptr, result_ptr, child_items,
-									  typlen, typalign, &nitems,
+		result_ptr = copy_acl_entries(ptr, result_ptr, items,
+									  typlen, typalign, &result_items,
 									  filter_not_inherited, NULL,
 									  extract_acl_entry_base);
 	}
 	else
 	{
-		result_ptr = copy_acl_entries(child_ptr, result_ptr, child_items,
-									  typlen, typalign, &nitems,
+		result_ptr = copy_acl_entries(ptr, result_ptr, items,
+									  typlen, typalign, &result_items,
 									  filter_access_denied, NULL,
 									  extract_acl_entry_base);
-		result_ptr = copy_acl_entries(child_ptr, result_ptr, child_items,
-									  typlen, typalign, &nitems,
+		result_ptr = copy_acl_entries(ptr, result_ptr, items,
+									  typlen, typalign, &result_items,
 									  filter_access_allowed, NULL,
 									  extract_acl_entry_base);
 	}
 
-	if (parent != NULL)
-		result_ptr = copy_acl_entries(ARR_DATA_PTR(parent), result_ptr,
-									  ARR_DIMS(parent)[0], typlen, typalign,
-									  &nitems,
+	if (parent_acl != NULL)
+		result_ptr = copy_acl_entries(ARR_DATA_PTR(parent_acl), result_ptr,
+									  ARR_DIMS(parent_acl)[0], typlen, typalign,
+									  &result_items,
 									  container ? filter_inherited_container
 												: filter_inherited_object,
 									  container ? modify_inherited_container
 												: modify_inherited_object,
 									  extract_acl_entry_base);
 
-	ARR_DIMS(result)[0] = nitems;
+	ARR_DIMS(result)[0] = result_items;
 	SET_VARSIZE(result, ARR_OVERHEAD_NONULLS(1) +
 						(result_ptr - ARR_DATA_PTR(result)));
 
