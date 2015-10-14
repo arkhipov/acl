@@ -67,6 +67,4 @@ ArrayType *merge_acls(const ArrayType *parent_acl, const ArrayType *acl,
 					  AclEntryBase * (*extract_acl_entry_base)(void *acl_entry),
 					  bool container, bool deny_first);
 
-void check_who_array(ArrayType *who_array);
-
 #endif

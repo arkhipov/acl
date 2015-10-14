@@ -1,4 +1,4 @@
-/* acl/acl--1.0.0.sql */
+/* acl/acl--1.0.1.sql */
 
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
 \echo Use "CREATE EXTENSION acl" to load this file.\quit
@@ -25,42 +25,42 @@ COMMENT ON TYPE ace IS 'access control list entry';
 CREATE FUNCTION acl_check_access(ace[], text, bool)
 RETURNS text
 AS 'MODULE_PATHNAME', 'acl_check_access_text_current_user'
-LANGUAGE C STRICT STABLE;
+LANGUAGE C STABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace[], text, bool) IS 'determine if an ACL grants a specified set of permissions to the current user';
 
 CREATE FUNCTION acl_check_access(ace[], int4, bool)
 RETURNS int4
 AS 'MODULE_PATHNAME', 'acl_check_access_int4_current_user'
-LANGUAGE C STRICT STABLE;
+LANGUAGE C STABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace[], int4, bool) IS 'determine if an ACL grants a specified set of permissions to the current user';
 
 CREATE FUNCTION acl_check_access(ace[], text, oid, bool)
 RETURNS text
 AS 'MODULE_PATHNAME', 'acl_check_access_text_oid'
-LANGUAGE C STRICT STABLE;
+LANGUAGE C STABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace[], text, oid, bool) IS 'determine if an ACL grants a specified set of permissions to the role identified by oid';
 
 CREATE FUNCTION acl_check_access(ace[], int4, oid, bool)
 RETURNS int4
 AS 'MODULE_PATHNAME', 'acl_check_access_int4_oid'
-LANGUAGE C STRICT STABLE;
+LANGUAGE C STABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace[], int4, oid, bool) IS 'determine if an ACL grants a specified set of permissions to the role identified by oid';
 
 CREATE FUNCTION acl_check_access(ace[], text, name, bool)
 RETURNS text
 AS 'MODULE_PATHNAME', 'acl_check_access_text_name'
-LANGUAGE C STRICT STABLE;
+LANGUAGE C STABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace[], text, name, bool) IS 'determine if an ACL grants a specified set of permissions to the role identified by name';
 
 CREATE FUNCTION acl_check_access(ace[], int4, name, bool)
 RETURNS int4
 AS 'MODULE_PATHNAME', 'acl_check_access_int4_name'
-LANGUAGE C STRICT STABLE;
+LANGUAGE C STABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace[], int4, name, bool) IS 'determine if an ACL grants a specified set of permissions to the role identified by name';
 
@@ -93,14 +93,14 @@ COMMENT ON TYPE ace_uuid IS 'access control list entry (UUID-based)';
 CREATE FUNCTION acl_check_access(ace_uuid[], text, uuid[], bool)
 RETURNS text
 AS 'MODULE_PATHNAME', 'acl_uuid_check_access_text'
-LANGUAGE C STRICT IMMUTABLE;
+LANGUAGE C IMMUTABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace_uuid[], text, uuid[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by UUIDs';
 
 CREATE FUNCTION acl_check_access(ace_uuid[], int4, uuid[], bool)
 RETURNS int4
 AS 'MODULE_PATHNAME', 'acl_uuid_check_access_int4'
-LANGUAGE C STRICT IMMUTABLE;
+LANGUAGE C IMMUTABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace_uuid[], int4, uuid[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by UUIDs';
 
@@ -133,14 +133,14 @@ COMMENT ON TYPE ace_int4 IS 'access control list entry (int4-based)';
 CREATE FUNCTION acl_check_access(ace_int4[], text, int4[], bool)
 RETURNS text
 AS 'MODULE_PATHNAME', 'acl_int4_check_access_text'
-LANGUAGE C STRICT IMMUTABLE;
+LANGUAGE C IMMUTABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace_int4[], text, int4[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by a set of int4s';
 
 CREATE FUNCTION acl_check_access(ace_int4[], int4, int4[], bool)
 RETURNS int4
 AS 'MODULE_PATHNAME', 'acl_int4_check_access_int4'
-LANGUAGE C STRICT IMMUTABLE;
+LANGUAGE C IMMUTABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace_int4[], int4, int4[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by a set of int4s';
 
@@ -173,14 +173,14 @@ COMMENT ON TYPE ace_int8 IS 'access control list entry (int8-based)';
 CREATE FUNCTION acl_check_access(ace_int8[], text, int8[], bool)
 RETURNS text
 AS 'MODULE_PATHNAME', 'acl_int8_check_access_text'
-LANGUAGE C STRICT IMMUTABLE;
+LANGUAGE C IMMUTABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace_int8[], text, int8[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by a set of int8s';
 
 CREATE FUNCTION acl_check_access(ace_int8[], int4, int8[], bool)
 RETURNS int4
 AS 'MODULE_PATHNAME', 'acl_int8_check_access_int4'
-LANGUAGE C STRICT IMMUTABLE;
+LANGUAGE C IMMUTABLE;
 
 COMMENT ON FUNCTION acl_check_access(ace_int8[], int4, int8[], bool) IS 'determine if an ACL grants a specified set of permissions to the principal identified by a set of int8s';
 

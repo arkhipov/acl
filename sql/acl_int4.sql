@@ -23,10 +23,35 @@ select 'd/ihpc/21474836480=wdddw'::ace_int4;
 select 'd/ihpc/214748364800=wdddw'::ace_int4;
 
 -- check access
-select acl_check_access('{d//1=w,d//2=s,a//2=sdw,a//3=0}'::ace_int4[], 'sd0', '{3, 2}'::int4[], false);
+select coalesce(acl_check_access('{}'::ace_int4[], 'sd0', '{3, 2}'::int4[], false), 'NULL');
+select coalesce(acl_check_access('{}'::ace_int4[], 'sd0', '{3, 2}'::int4[], true), 'NULL');
+select coalesce(acl_check_access(null::ace_int4[], 'sd0', '{3, 2}'::int4[], false), 'NULL');
+select coalesce(acl_check_access(null::ace_int4[], 'sd0', '{3, 2}'::int4[], true), 'NULL');
+select coalesce(acl_check_access(null::ace_int4[], 'sd0', '{}'::int4[], false), 'NULL');
+select coalesce(acl_check_access(null::ace_int4[], 'sd0', '{}'::int4[], true), 'NULL');
+select coalesce(acl_check_access(null::ace_int4[], 'sd0', null::int4[], false), 'NULL');
+select coalesce(acl_check_access(null::ace_int4[], 'sd0', null::int4[], true), 'NULL');
+
+select acl_check_access('{}'::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int4[], false)::bit(32);
+select acl_check_access('{}'::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int4[], true)::bit(32);
+select acl_check_access(null::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int4[], false)::bit(32);
+select acl_check_access(null::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int4[], true)::bit(32);
+select acl_check_access(null::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{}'::int4[], false)::bit(32);
+select acl_check_access(null::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{}'::int4[], true)::bit(32);
+select acl_check_access(null::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), null::int4[], false)::bit(32);
+select acl_check_access(null::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), null::int4[], true)::bit(32);
+
+select coalesce(acl_check_access('{d//1=w,d//2=s,a//2=sdw,a//3=0}'::ace_int4[], 'sdc0', '{3, 2}'::int4[], false), 'NULL');
+select coalesce(acl_check_access('{d//1=w,d//2=s,a//2=sdw,a//3=0}'::ace_int4[], 'sdc0', '{3, 2}'::int4[], true), 'NULL');
+select acl_check_access('{d//1=w,d//2=s,a//2=sdw,a//3=0}'::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int4[], false)::bit(32);
+select acl_check_access('{d//1=w,d//2=s,a//2=sdw,a//3=0}'::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int4[], true)::bit(32);
+
+select coalesce(acl_check_access(null::ace_int4[], 'sd0', '{}'::int4[], null), 'NULL');
+select acl_check_access(null::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{}'::int4[], null)::bit(32);
 
 -- inherit only
 select acl_check_access('{d//1=w,d/i/2=s,a//2=sdw,a//3=0}'::ace_int4[], 'sd0', '{3, 2}'::int4[], false);
+select acl_check_access('{d//1=w,d/i/2=s,a//2=sdw,a//3=0}'::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int4[], false)::bit(32);
 
 -- merge
 select acl_merge(null::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);

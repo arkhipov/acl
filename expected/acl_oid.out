@@ -98,6 +98,30 @@ select (ace::text::ace::text) ~ '#' from acl_test;
 
 -- current user
 set role 'acl_test1';
+select coalesce(acl_check_access('{}'::ace[], 'sd0', false), 'NULL');
+ coalesce 
+----------
+ 
+(1 row)
+
+select acl_check_access('{}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00000000000000000000000000000000
+(1 row)
+
+select coalesce(acl_check_access(null::ace[], 'sd0', false), 'NULL');
+ coalesce 
+----------
+ 
+(1 row)
+
+select acl_check_access(null::ace[], (1 << 0) | (1 << 27) | (1 << 29), false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00000000000000000000000000000000
+(1 row)
+
 select acl_check_access('{d//=s,a//acl_test1=sdw}'::ace[], 'sd0', false);
  acl_check_access 
 ------------------
@@ -138,6 +162,42 @@ select acl_check_access('{d/hpc/acl_test1=dw0,a//\"\"\"acl=\"\"s\,/a//acl_test1\
 
 reset role;
 -- name
+select coalesce(acl_check_access('{}'::ace[], 'sd0', 'acl_test1', false), 'NULL');
+ coalesce 
+----------
+ 
+(1 row)
+
+select acl_check_access('{}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), 'acl_test1', false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00000000000000000000000000000000
+(1 row)
+
+select coalesce(acl_check_access(null::ace[], 'sd0', 'acl_test1', false), 'NULL');
+ coalesce 
+----------
+ 
+(1 row)
+
+select acl_check_access(null::ace[], (1 << 0) | (1 << 27) | (1 << 29), 'acl_test1', false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00000000000000000000000000000000
+(1 row)
+
+select coalesce(acl_check_access('{}'::ace[], 'sd0', null, false), 'NULL');
+ coalesce 
+----------
+ NULL
+(1 row)
+
+select acl_check_access('{}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), null, false)::bit(32);
+ acl_check_access 
+------------------
+ 
+(1 row)
+
 select acl_check_access('{d//=s,a//acl_test1=sdw}'::ace[], 'sd0', 'acl_test1', false);
  acl_check_access 
 ------------------
@@ -175,6 +235,42 @@ select acl_check_access('{d/hpc/acl_test1=dw0,a//\"\"\"acl=\"\"s\,/a//acl_test1\
 (1 row)
 
 -- oid
+select coalesce(acl_check_access('{}'::ace[], 'sd0', (select oid from pg_roles where rolname = 'acl_test1'), false), 'NULL');
+ coalesce 
+----------
+ 
+(1 row)
+
+select acl_check_access('{}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), (select oid from pg_roles where rolname = 'acl_test1'), false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00000000000000000000000000000000
+(1 row)
+
+select coalesce(acl_check_access(null::ace[], 'sd0', (select oid from pg_roles where rolname = 'acl_test1'), false), 'NULL');
+ coalesce 
+----------
+ 
+(1 row)
+
+select acl_check_access(null::ace[], (1 << 0) | (1 << 27) | (1 << 29), (select oid from pg_roles where rolname = 'acl_test1'), false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00000000000000000000000000000000
+(1 row)
+
+select coalesce(acl_check_access('{}'::ace[], 'sd0', null, false), 'NULL');
+ coalesce 
+----------
+ NULL
+(1 row)
+
+select acl_check_access('{}'::ace[], (1 << 0) | (1 << 27) | (1 << 29), null, false)::bit(32);
+ acl_check_access 
+------------------
+ 
+(1 row)
+
 select acl_check_access('{d//=s,a//acl_test1=sdw}'::ace[], 'sd0', (select oid from pg_roles where rolname = 'acl_test1'), false);
  acl_check_access 
 ------------------

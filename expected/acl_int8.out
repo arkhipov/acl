@@ -86,17 +86,141 @@ ERROR:  int8 too long
 LINE 1: select 'd/ihpc/922337203685477580800=wdddw'::ace_int8;
                ^
 -- check access
-select acl_check_access('{d//1=w,d//2=s,a//2=sdw,a//3=0}'::ace_int8[], 'sd0', '{3, 2}'::int8[], false);
+select coalesce(acl_check_access('{}'::ace_int8[], 'sd0', '{3, 2}'::int8[], false), 'NULL');
+ coalesce 
+----------
+ 
+(1 row)
+
+select coalesce(acl_check_access('{}'::ace_int8[], 'sd0', '{3, 2}'::int8[], true), 'NULL');
+ coalesce 
+----------
+ 0sd
+(1 row)
+
+select coalesce(acl_check_access(null::ace_int8[], 'sd0', '{3, 2}'::int8[], false), 'NULL');
+ coalesce 
+----------
+ 
+(1 row)
+
+select coalesce(acl_check_access(null::ace_int8[], 'sd0', '{3, 2}'::int8[], true), 'NULL');
+ coalesce 
+----------
+ 0sd
+(1 row)
+
+select coalesce(acl_check_access(null::ace_int8[], 'sd0', '{}'::int8[], false), 'NULL');
+ coalesce 
+----------
+ 
+(1 row)
+
+select coalesce(acl_check_access(null::ace_int8[], 'sd0', '{}'::int8[], true), 'NULL');
+ coalesce 
+----------
+ 0sd
+(1 row)
+
+select coalesce(acl_check_access(null::ace_int8[], 'sd0', null::int8[], false), 'NULL');
+ coalesce 
+----------
+ NULL
+(1 row)
+
+select coalesce(acl_check_access(null::ace_int8[], 'sd0', null::int8[], true), 'NULL');
+ coalesce 
+----------
+ NULL
+(1 row)
+
+select acl_check_access('{}'::ace_int8[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int8[], false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00000000000000000000000000000000
+(1 row)
+
+select acl_check_access('{}'::ace_int8[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int8[], true)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00101000000000000000000000000001
+(1 row)
+
+select acl_check_access(null::ace_int8[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int8[], false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00000000000000000000000000000000
+(1 row)
+
+select acl_check_access(null::ace_int8[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int8[], true)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00101000000000000000000000000001
+(1 row)
+
+select acl_check_access(null::ace_int8[], (1 << 0) | (1 << 27) | (1 << 29), '{}'::int8[], false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00000000000000000000000000000000
+(1 row)
+
+select acl_check_access(null::ace_int8[], (1 << 0) | (1 << 27) | (1 << 29), '{}'::int8[], true)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00101000000000000000000000000001
+(1 row)
+
+select acl_check_access(null::ace_int8[], (1 << 0) | (1 << 27) | (1 << 29), null::int8[], false)::bit(32);
  acl_check_access 
 ------------------
+ 
+(1 row)
+
+select acl_check_access(null::ace_int8[], (1 << 0) | (1 << 27) | (1 << 29), null::int8[], true)::bit(32);
+ acl_check_access 
+------------------
+ 
+(1 row)
+
+select coalesce(acl_check_access('{d//1=w,d//2=s,a//2=sdw,a//3=0}'::ace_int8[], 'sdc0', '{3, 2}'::int8[], false), 'NULL');
+ coalesce 
+----------
  0d
 (1 row)
 
+select coalesce(acl_check_access('{d//1=w,d//2=s,a//2=sdw,a//3=0}'::ace_int8[], 'sdc0', '{3, 2}'::int8[], true), 'NULL');
+ coalesce 
+----------
+ 0cd
+(1 row)
+
+select acl_check_access('{d//1=w,d//2=s,a//2=sdw,a//3=0}'::ace_int8[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int8[], false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00100000000000000000000000000001
+(1 row)
+
+select acl_check_access('{d//1=w,d//2=s,a//2=sdw,a//3=0}'::ace_int8[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int8[], true)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00100000000000000000000000000001
+(1 row)
+
+select coalesce(acl_check_access(null::ace_int8[], 'sd0', '{}'::int8[], null), 'NULL');
+ERROR:  allow_implicit argument must be not null
+select acl_check_access(null::ace_int8[], (1 << 0) | (1 << 27) | (1 << 29), '{}'::int8[], null)::bit(32);
+ERROR:  allow_implicit argument must be not null
 -- inherit only
 select acl_check_access('{d//1=w,d/i/2=s,a//2=sdw,a//3=0}'::ace_int8[], 'sd0', '{3, 2}'::int8[], false);
  acl_check_access 
 ------------------
  0sd
+(1 row)
+
+select acl_check_access('{d//1=w,d/i/2=s,a//2=sdw,a//3=0}'::ace_int8[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int8[], false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00101000000000000000000000000001
 (1 row)
 
 -- merge

@@ -279,9 +279,12 @@ check_access(const ArrayType *acl, int16 typlen, char typalign,
 	char	   *entry;
 	int			num;
 
+	if (acl == NULL)
+		return implicit_allow ? mask : 0;
+
 	check_acl(acl);
 
-	num = ARR_DIMS(acl)[0];
+	num = ArrayGetNItems(ARR_NDIM(acl), ARR_DIMS(acl));
 	entry = ARR_DATA_PTR(acl);
 
 	for (i = 0; mask != 0 && i < num; ++i)
@@ -297,9 +300,7 @@ check_access(const ArrayType *acl, int16 typlen, char typalign,
 				who_matches(entry, who))
 			{
 				if (base->type == ACE_ACCESS_ALLOWED)
-				{
 					granted |= mask & base->mask;
-				}
 
 				mask &= ~base->mask;
 			}
@@ -364,7 +365,7 @@ merge_acls(const ArrayType *parent_acl, const ArrayType *acl,
 
 	check_acl(acl);
 
-	items = ARR_DIMS(acl)[0];
+	items = ArrayGetNItems(ARR_NDIM(acl), ARR_DIMS(acl));
 	ptr = ARR_DATA_PTR(acl);
 
 	maxbytes = ARR_OVERHEAD_NONULLS(1);
@@ -400,8 +401,9 @@ merge_acls(const ArrayType *parent_acl, const ArrayType *acl,
 
 	if (parent_acl != NULL)
 		result_ptr = copy_acl_entries(ARR_DATA_PTR(parent_acl), result_ptr,
-									  ARR_DIMS(parent_acl)[0], typlen, typalign,
-									  &result_items,
+									  ArrayGetNItems(ARR_NDIM(parent_acl),
+													 ARR_DIMS(parent_acl)),
+									  typlen, typalign, &result_items,
 									  container ? filter_inherited_container
 												: filter_inherited_object,
 									  container ? modify_inherited_container
@@ -413,28 +415,6 @@ merge_acls(const ArrayType *parent_acl, const ArrayType *acl,
 						(result_ptr - ARR_DATA_PTR(result)));
 
 	return result;
-}
-
-void
-check_who_array(ArrayType *who_array)
-{
-	if (ARR_HASNULL(who_array))
-		ereport(ERROR,
-				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
-				 errmsg("Who array must not contain null values")));
-
-
-	if (ARR_NDIM(who_array) != 1)
-		ereport(ERROR,
-				(errcode(ERRCODE_INTERNAL_ERROR),
-				 errmsg("wrong number of dimensions of who array"),
-				 errdetail("Who array must be one dimensional.")));
-
-	if (ARR_LBOUND(who_array)[0] != 1)
-		ereport(ERROR,
-				(errcode(ERRCODE_INTERNAL_ERROR),
-				 errmsg("wrong range of who array"),
-				 errdetail("Lower bound of who array must be one.")));
 }
 
 static uint32
@@ -465,7 +445,7 @@ format_mask(StringInfo out, uint32 mask, char mask_chars[])
 static void
 check_acl(const ArrayType *acl)
 {
-	if (ARR_NDIM(acl) != 1)
+	if (ARR_NDIM(acl) > 1)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				 errmsg("ACL arrays must be one-dimensional")));

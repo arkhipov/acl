@@ -20,6 +20,7 @@
 #include "utils/syscache.h"
 
 #include "acl.h"
+#include "util.h"
 
 PG_FUNCTION_INFO_V1(ace_in);
 PG_FUNCTION_INFO_V1(ace_out);
@@ -93,10 +94,14 @@ ace_out(PG_FUNCTION_ARGS)
 Datum
 acl_check_access_int4_current_user(PG_FUNCTION_ARGS)
 {
-	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
-	uint32			mask = PG_GETARG_UINT32(1);
-	bool			implicit_allow = PG_GETARG_BOOL(2);
+	ArrayType	   *acl;
+	uint32			mask;
+	bool			implicit_allow;
 	Oid				who;
+
+	if (!check_access_extract_args(fcinfo, &acl, &mask, NULL, &implicit_allow,
+								   false, false))
+		PG_RETURN_NULL();
 
 	who = GetUserId();
 
@@ -109,10 +114,14 @@ acl_check_access_int4_current_user(PG_FUNCTION_ARGS)
 Datum
 acl_check_access_text_current_user(PG_FUNCTION_ARGS)
 {
-	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
-	text		   *mask = PG_GETARG_TEXT_P(1);
-	bool			implicit_allow = PG_GETARG_BOOL(2);
+	ArrayType	   *acl;
+	text		   *mask;
+	bool			implicit_allow;
 	Oid				who;
+
+	if (!check_access_text_mask_extract_args(fcinfo, &acl, &mask, NULL, &implicit_allow,
+											 false, false))
+		PG_RETURN_NULL();
 
 	who = GetUserId();
 
@@ -126,10 +135,19 @@ acl_check_access_text_current_user(PG_FUNCTION_ARGS)
 Datum
 acl_check_access_int4_oid(PG_FUNCTION_ARGS)
 {
-	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
-	uint32			mask = PG_GETARG_UINT32(1);
-	Oid				who = PG_GETARG_OID(2);
-	bool			implicit_allow = PG_GETARG_BOOL(3);
+	ArrayType	   *acl;
+	uint32			mask;
+	Oid				who;
+	bool			implicit_allow;
+
+	if (!check_access_extract_args(fcinfo, &acl, &mask, NULL, &implicit_allow,
+								   false, true))
+		PG_RETURN_NULL();
+
+	if (PG_ARGISNULL(2))
+		PG_RETURN_NULL();
+
+	who = PG_GETARG_OID(2);
 
 	PG_RETURN_UINT32(check_access(acl, ACL_TYPE_LENGTH, ACL_TYPE_ALIGNMENT,
 								  extract_acl_entry_base, mask,
@@ -140,10 +158,19 @@ acl_check_access_int4_oid(PG_FUNCTION_ARGS)
 Datum
 acl_check_access_text_oid(PG_FUNCTION_ARGS)
 {
-	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
-	text		   *mask = PG_GETARG_TEXT_P(1);
-	Oid				who = PG_GETARG_OID(2);
-	bool			implicit_allow = PG_GETARG_BOOL(3);
+	ArrayType	   *acl;
+	text		   *mask;
+	Oid				who;
+	bool			implicit_allow;
+
+	if (!check_access_text_mask_extract_args(fcinfo, &acl, &mask, NULL, &implicit_allow,
+											 false, true))
+		PG_RETURN_NULL();
+
+	if (PG_ARGISNULL(2))
+		PG_RETURN_NULL();
+
+	who = PG_GETARG_OID(2);
 
 	PG_RETURN_TEXT_P(check_access_text_mask(acl, ACL_TYPE_LENGTH,
 											ACL_TYPE_ALIGNMENT,
@@ -155,12 +182,20 @@ acl_check_access_text_oid(PG_FUNCTION_ARGS)
 Datum
 acl_check_access_int4_name(PG_FUNCTION_ARGS)
 {
-	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
-	uint32			mask = PG_GETARG_UINT32(1);
-	Name			rolename = PG_GETARG_NAME(2);
-	bool			implicit_allow = PG_GETARG_BOOL(3);
+	ArrayType	   *acl;
+	uint32			mask;
+	Name			rolename;
+	bool			implicit_allow;
 	Oid				who;
 
+	if (!check_access_extract_args(fcinfo, &acl, &mask, NULL, &implicit_allow,
+								   false, true))
+		PG_RETURN_NULL();
+
+	if (PG_ARGISNULL(2))
+		PG_RETURN_NULL();
+
+	rolename = PG_GETARG_NAME(2);
 	who = get_role_oid(NameStr(*rolename), false);
 
 	PG_RETURN_UINT32(check_access(acl, ACL_TYPE_LENGTH, ACL_TYPE_ALIGNMENT,
@@ -172,12 +207,20 @@ acl_check_access_int4_name(PG_FUNCTION_ARGS)
 Datum
 acl_check_access_text_name(PG_FUNCTION_ARGS)
 {
-	ArrayType	   *acl = PG_GETARG_ARRAYTYPE_P(0);
-	text		   *mask = PG_GETARG_TEXT_P(1);
-	Name			rolename = PG_GETARG_NAME(2);
-	bool			implicit_allow = PG_GETARG_BOOL(3);
+	ArrayType	   *acl;
+	text		   *mask;
+	Name			rolename;
+	bool			implicit_allow;
 	Oid				who;
 
+	if (!check_access_text_mask_extract_args(fcinfo, &acl, &mask, NULL, &implicit_allow,
+											 false, true))
+		PG_RETURN_NULL();
+
+	if (PG_ARGISNULL(2))
+		PG_RETURN_NULL();
+
+	rolename = PG_GETARG_NAME(2);
 	who = get_role_oid(NameStr(*rolename), false);
 
 	PG_RETURN_TEXT_P(check_access_text_mask(acl, ACL_TYPE_LENGTH,
@@ -195,31 +238,7 @@ acl_merge(PG_FUNCTION_ARGS)
 	bool			container;
 	bool			deny_first;
 
-	if (PG_ARGISNULL(0))
-		parent = NULL;
-	else
-		parent = PG_GETARG_ARRAYTYPE_P(0);
-
-	if (PG_ARGISNULL(1))
-		ereport(ERROR,
-				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
-				 errmsg("ACL must be not null")));
-
-	child = PG_GETARG_ARRAYTYPE_P(1);
-
-	if (PG_ARGISNULL(2))
-		ereport(ERROR,
-				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
-				 errmsg("container argument must be not null")));
-
-	container = PG_GETARG_BOOL(2);
-
-	if (PG_ARGISNULL(3))
-		ereport(ERROR,
-				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
-				 errmsg("deny_first argument must be not null")));
-
-	deny_first = PG_GETARG_BOOL(3);
+	merge_acls_extract_args(fcinfo, &parent, &child, &container, &deny_first);
 
 	PG_RETURN_ARRAYTYPE_P(merge_acls(parent, child,
 									 ACL_TYPE_LENGTH, ACL_TYPE_ALIGNMENT,
