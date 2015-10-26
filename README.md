@@ -40,17 +40,35 @@ rarely have separate database accounts for each user, which means that the
 How do I set it up?
 -------------------
 
-The easiest way to install the extension is to to use the
-[PGXN client](http://pgxnclient.projects.pgfoundry.org/).
+If you are running Linux, the easiest way to install the extension is to to use
+the [PGXN client](http://pgxnclient.projects.pgfoundry.org/).
 
     $ pgxn install acl
 
-But if you stick with the good old Make, you can set up the extension like
-this:
+Or if you prefer to stick with the good old Make, you can set up the extension
+like this:
 
     $ make
     $ make install
     $ make installcheck
+
+If you are running Windows, you need to run the [MSBuild](https://www.microsoft.com/en-us/download/details.aspx?id=48159)
+command in the [Visual Studio command prompt](https://msdn.microsoft.com/en-us/library/f35ctcxw.aspx).
+
+    > msbuild /p:configuration=9.4 /p:platform=x64
+
+The platforms available are x64 and x86 and the configuration are 9.1, 9.2,
+9.3 and 9.4.
+
+Or you can download the latest released zip [here](https://github.com/arkhipov/acl/releases/latest).
+
+Then you must copy the DLL from the project into the PostgreSQL's `lib`
+directory and the `.sql` and `.control` files into the directory
+`share\extension`.
+
+    > copy x64\9.4\acl.dll "C:\Program Files\PostgreSQL\9.4\lib"
+    > copy *.control "C:\Program Files\PostgreSQL\9.4\share\extension"
+    > copy *.sql "C:\Program Files\PostgreSQL\9.4\share\extension"
 
 Once the extension is installed, you can add it to a database.
 

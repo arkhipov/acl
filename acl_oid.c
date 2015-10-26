@@ -22,6 +22,16 @@
 #include "acl.h"
 #include "util.h"
 
+PGDLLEXPORT Datum ace_in(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum ace_out(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum acl_check_access_text_current_user(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum acl_check_access_int4_current_user(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum acl_check_access_text_oid(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum acl_check_access_int4_oid(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum acl_check_access_text_name(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum acl_check_access_int4_name(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum acl_merge(PG_FUNCTION_ARGS);
+
 PG_FUNCTION_INFO_V1(ace_in);
 PG_FUNCTION_INFO_V1(ace_out);
 PG_FUNCTION_INFO_V1(acl_check_access_text_current_user);
@@ -31,16 +41,6 @@ PG_FUNCTION_INFO_V1(acl_check_access_int4_oid);
 PG_FUNCTION_INFO_V1(acl_check_access_text_name);
 PG_FUNCTION_INFO_V1(acl_check_access_int4_name);
 PG_FUNCTION_INFO_V1(acl_merge);
-
-Datum ace_in(PG_FUNCTION_ARGS);
-Datum ace_out(PG_FUNCTION_ARGS);
-Datum acl_check_access_text_current_user(PG_FUNCTION_ARGS);
-Datum acl_check_access_int4_current_user(PG_FUNCTION_ARGS);
-Datum acl_check_access_text_oid(PG_FUNCTION_ARGS);
-Datum acl_check_access_int4_oid(PG_FUNCTION_ARGS);
-Datum acl_check_access_text_name(PG_FUNCTION_ARGS);
-Datum acl_check_access_int4_name(PG_FUNCTION_ARGS);
-Datum acl_merge(PG_FUNCTION_ARGS);
 
 typedef struct AclEntryOid
 {

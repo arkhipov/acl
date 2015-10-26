@@ -15,17 +15,17 @@
 #include "acl.h"
 #include "util.h"
 
+PGDLLEXPORT Datum ace_uuid_in(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum ace_uuid_out(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum acl_uuid_check_access_text(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum acl_uuid_check_access_int4(PG_FUNCTION_ARGS);
+PGDLLEXPORT Datum acl_uuid_merge(PG_FUNCTION_ARGS);
+
 PG_FUNCTION_INFO_V1(ace_uuid_in);
 PG_FUNCTION_INFO_V1(ace_uuid_out);
 PG_FUNCTION_INFO_V1(acl_uuid_check_access_text);
 PG_FUNCTION_INFO_V1(acl_uuid_check_access_int4);
 PG_FUNCTION_INFO_V1(acl_uuid_merge);
-
-Datum ace_uuid_in(PG_FUNCTION_ARGS);
-Datum ace_uuid_out(PG_FUNCTION_ARGS);
-Datum acl_uuid_check_access_text(PG_FUNCTION_ARGS);
-Datum acl_uuid_check_access_int4(PG_FUNCTION_ARGS);
-Datum acl_uuid_merge(PG_FUNCTION_ARGS);
 
 typedef struct AclEntryUUID
 {
