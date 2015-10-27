@@ -3,7 +3,7 @@
    "abstract": "Acess Control List (ACL) Extension",
    "description": "This extension provides support for ACL type.",
    "version": "1.0.1",
-   "release_status": "testing",
+   "release_status": "stable",
    "maintainer": [
       "Vladislav Arkhipov <vlad@arkhipov.ru>"
    ],
