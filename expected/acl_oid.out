@@ -13,7 +13,7 @@ ERROR:  missing "/" sign
 LINE 1: select 'a'::ace;
                ^
 select 'q'::ace;
-ERROR:  invalid ACE type: must be one of "adi"
+ERROR:  invalid ACE type: must be one of "ad"
 LINE 1: select 'q'::ace;
                ^
 select 'a*'::ace;

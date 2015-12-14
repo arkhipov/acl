@@ -8,7 +8,7 @@ ERROR:  missing "/" sign
 LINE 1: select 'a'::ace_int4;
                ^
 select 'q'::ace_int4;
-ERROR:  invalid ACE type: must be one of "adi"
+ERROR:  invalid ACE type: must be one of "ad"
 LINE 1: select 'q'::ace_int4;
                ^
 select 'a*'::ace_int4;

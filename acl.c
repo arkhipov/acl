@@ -25,7 +25,7 @@ static char ace_type_chars[] =
 	'd'		// ACCESS_DENIED
 };
 
-#define ACE_ALL_TYPES_STR		"adi"
+#define ACE_ALL_TYPES_STR		"ad"
 
 static char ace_flag_chars[] =
 {
