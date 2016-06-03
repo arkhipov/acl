@@ -55,10 +55,10 @@ like this:
 If you are running Windows, you need to run the [MSBuild](https://www.microsoft.com/en-us/download/details.aspx?id=48159)
 command in the [Visual Studio command prompt](https://msdn.microsoft.com/en-us/library/f35ctcxw.aspx).
 
-    > msbuild /p:configuration=9.4 /p:platform=x64
+    > msbuild /p:pgversion=9.4 /p:configuration=Release /p:platform=x64
 
 The platforms available are x64 and x86 and the configuration are 9.1, 9.2,
-9.3 and 9.4.
+9.3, 9.4, and 9.5.
 
 Or you can download the latest released zip [here](https://github.com/arkhipov/acl/releases/latest).
 
