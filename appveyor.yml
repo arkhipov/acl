@@ -1,0 +1,79 @@
+version: 1.0.{build}
+pull_requests:
+  do_not_increment_build_number: true
+os: Visual Studio 2015
+configuration: Release
+platform: x64
+clone_depth: 1
+environment:
+  PGUSER: postgres
+  PGPASSWORD: Password12!
+  matrix:
+  - pgversion: 9.3
+    PlatformToolset: Windows7.1SDK
+    psqlopt: --psqldir
+  - pgversion: 9.4
+    PlatformToolset: v120
+    psqlopt: --psqldir
+  - pgversion: 9.5
+    PlatformToolset: v120
+    psqlopt: --bindir
+# exe: postgresql-9.5.3-1-windows-x64.exe # already installed
+  - pgversion: 9.6
+    PlatformToolset: v120
+    exe: postgresql-9.6.0-beta1-windows-x64.exe
+    psqlopt: --bindir
+
+install:
+- if defined exe if not exist %exe% curl -sLO http://get.enterprisedb.com/postgresql/%exe%
+- if not exist "%PROGRAMFILES%\PostgreSQL\%pgversion%\" (
+    %exe% --unattendedmodeui minimal
+           --mode unattended
+           --superpassword %PGPASSWORD%
+           --servicepassword %PGPASSWORD%
+      && net stop postgresql-x64-%pgversion%
+  )
+
+cache: '%exe%'
+
+build_script:
+- msbuild /p:PlatformToolset=%PlatformToolset% /p:configuration=Release /p:platform=x64^
+          acl.vcxproj^
+          /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+
+test_script:
+- set pgbin=%ProgramFiles%\PostgreSQL\%pgversion%\bin
+- set PATH=%PATH%;%SystemRoot%\system32;%pgbin%
+
+- rem Check DLL dependencies.
+- C:\msys64\usr\bin\ldd x64\Release\acl.dll
+
+- appveyor AddMessage "Copying the extension files to the PostgreSQL directories." -Category Information
+- copy /y *.control "%ProgramFiles%\PostgreSQL\%pgversion%\share\extension\"
+- copy /y *.sql "%ProgramFiles%\PostgreSQL\%pgversion%\share\extension\"
+- copy /y x64\Release\acl.dll "%ProgramFiles%\PostgreSQL\%pgversion%\lib\"
+
+- rem Start the database server.
+- net start postgresql-x64-%pgversion%
+
+- rem Run the regression tests tool.
+- appveyor AddTest Regression -Framework pg_regress -FileName sql\ -Outcome Running
+- pg_regress "%psqlopt%=%pgbin%"
+             install acl_int4 acl_int8 acl_oid acl_uuid
+- if ERRORLEVEL 1 ( set Outcome=Failed ) else ( set Outcome=Passed )
+- perl -e "my @s=stat('regression.out'); print 1000*($s[9]-$s[10]);" > duration
+- set /p Duration=< duration
+- appveyor UpdateTest Regression -Framework pg_regress -FileName sql\ -Outcome %Outcome% -Duration %Duration%
+- if not %Outcome%==Passed type regression.diffs
+
+- appveyor AddMessage Packing -Category Information
+- md tmp\share\extension
+- copy *.sql tmp\share\extension\
+- copy *.control tmp\share\extension\
+- copy LICENSE tmp\ACL_LICENSE
+- md tmp\lib
+- copy x64\Release\acl.dll tmp\lib
+- 7z a -r acl.zip .\tmp\*
+
+artifacts:
+- path: acl.zip
