@@ -109,7 +109,7 @@ static int ace_type_inverted[256];
 static int ace_flag_inverted[256];
 static int ace_mask_inverted[256];
 
-void _PG_init(void);
+PGDLLEXPORT void _PG_init(void);
 
 static void format_mask(StringInfo out, uint32 mask, char mask_chars[]);
 static uint32 parse_mask_char(char c);
