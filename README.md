@@ -1,7 +1,7 @@
 Access Control Lists (ACL) Extension
 ====================================
 
-[![PGXN version](https://badge.fury.io/pg/acl.svg)](http://badge.fury.io/pg/acl) [![Build Status](https://travis-ci.org/arkhipov/acl.svg?branch=master)](https://travis-ci.org/arkhipov/acl)
+[![PGXN version](https://badge.fury.io/pg/acl.svg)](http://badge.fury.io/pg/acl) [![Build Status](https://travis-ci.org/arkhipov/acl.svg?branch=master)](https://travis-ci.org/arkhipov/acl) [![Build Status](https://ci.appveyor.com/api/projects/status/github/arkhipov/acl?branch=master&svg=true)](https://ci.appveyor.com/project/arkhipov/acl)
 
 Quick Start
 ===========
