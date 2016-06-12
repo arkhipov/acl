@@ -3,3 +3,6 @@ Version 1.0.0, released 2015-08-02
 
 Version 1.0.1, released 2015-08-27
   - fixed the bug with NULL values
+
+Version 1.0.2, released 2016-06-12
+  - fixed access violation in Windows

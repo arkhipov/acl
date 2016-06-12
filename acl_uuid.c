@@ -2,7 +2,7 @@
  *
  * acl_uuid.c
  *
- * Copyright (c) 2015 Vladislav Arkhipov <vlad@arkhipov.ru>
+ * Copyright (c) 2015-2016 Vladislav Arkhipov <vlad@arkhipov.ru>
  *
  * -------------------------------------------------------------------------
  */
