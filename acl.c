@@ -516,11 +516,11 @@ filter_access_allowed(AclEntryBase *entry)
 static bool
 filter_inherited_container(AclEntryBase *entry)
 {
-	if (entry->flags & ACE_NO_PROPAGATE_INHERIT)
-		return (entry->flags & ACE_CONTAINER_INHERIT) != 0;
-	else
-		return (entry->flags & ACE_OBJECT_INHERIT) ||
-			   (entry->flags & ACE_CONTAINER_INHERIT);
+	uint32		flags;
+
+	flags = entry->flags;
+	return (flags & ACE_CONTAINER_INHERIT) ||
+		   ((flags & ACE_OBJECT_INHERIT) && !(flags & ACE_NO_PROPAGATE_INHERIT));
 }
 
 static bool
@@ -535,7 +535,12 @@ modify_inherited_container(AclEntryBase *src, AclEntryBase *dest)
 	if (src->flags & ACE_NO_PROPAGATE_INHERIT)
 	{
 		if (src->flags & ACE_CONTAINER_INHERIT)
-			dest->flags = 0;
+			dest->flags &= ACE_FLAGS_APPLICATION_SPECIFIC;
+	}
+	else if (src->flags & ACE_CONTAINER_INHERIT)
+	{
+		if ((src->flags & ACE_INHERIT_ONLY) && !(src->flags & ACE_INHERITED))
+			dest->flags &= ~ACE_INHERIT_ONLY;
 	}
 	else if (src->flags & ACE_OBJECT_INHERIT)
 	{
@@ -549,7 +554,7 @@ static void
 modify_inherited_object(AclEntryBase *src, AclEntryBase *dest)
 {
 	if (src->flags & ACE_OBJECT_INHERIT)
-		dest->flags = 0;
+		dest->flags &= ACE_FLAGS_APPLICATION_SPECIFIC;
 
 	dest->flags |= ACE_INHERITED;
 }

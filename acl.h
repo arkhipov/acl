@@ -13,27 +13,29 @@
 #include "utils/array.h"
 
 /* ACE types */
-#define ACE_ACCESS_ALLOWED			0x00000001
-#define ACE_ACCESS_DENIED			0x00000002
+#define ACE_ACCESS_ALLOWED				0x00000001
+#define ACE_ACCESS_DENIED				0x00000002
 
 /* ACE flags
  * 0-15 application-specific
  * 16-31 reserved */
-#define ACE_INHERIT_ONLY			0x80000000
-#define ACE_OBJECT_INHERIT			0x40000000
-#define ACE_CONTAINER_INHERIT		0x20000000
-#define ACE_NO_PROPAGATE_INHERIT	0x10000000
-#define ACE_INHERITED				0x08000000
-#define ACE_INVALID					0x04000000
+#define ACE_INHERIT_ONLY				0x80000000
+#define ACE_OBJECT_INHERIT				0x40000000
+#define ACE_CONTAINER_INHERIT			0x20000000
+#define ACE_NO_PROPAGATE_INHERIT		0x10000000
+#define ACE_INHERITED					0x08000000
+#define ACE_INVALID						0x04000000
+
+#define ACE_FLAGS_APPLICATION_SPECIFIC	0x0000FFFF
 
 /* ACE access rights
  * 0-15 application-specific
  * 16-31 reserved */
-#define ACE_READ					0x80000000
-#define ACE_WRITE					0x40000000
-#define ACE_DELETE					0x20000000
-#define ACE_READ_ACL				0x10000000
-#define ACE_WRITE_ACL				0x08000000
+#define ACE_READ						0x80000000
+#define ACE_WRITE						0x40000000
+#define ACE_DELETE						0x20000000
+#define ACE_READ_ACL					0x10000000
+#define ACE_WRITE_ACL					0x08000000
 
 typedef struct AclEntryBase {
 	uint32			type;

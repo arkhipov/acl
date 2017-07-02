@@ -72,20 +72,38 @@ select acl_merge('{a/i/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_
 -- object inherit -> inherit only + object inherit
 select acl_merge('{a/o/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], true, false);
 
+-- object inherit + inherit only -> inherit only + object inherit
+select acl_merge('{a/oi/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], true, false);
+
 -- object inherit + no propagate inherit -> no inheritance
 select acl_merge('{a/op/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], true, false);
+
+-- object inherit + no propagate inherit + inherit only -> no inheritance
+select acl_merge('{a/opi/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], true, false);
 
 --container inherit -> container inherit
 select acl_merge('{a/c/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], true, false);
 
+--container inherit + inherit only -> container inherit
+select acl_merge('{a/ci/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], true, false);
+
 -- container inherit + no propagate inherit -> no flags
 select acl_merge('{a/cp/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], true, false);
 
--- container inherit + object inherit -> container inherit + object inherit + inherit only
+-- container inherit + no propagate inherit + inherit only -> no flags
+select acl_merge('{a/cpi/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], true, false);
+
+-- container inherit + object inherit -> container inherit + object inherit
 select acl_merge('{a/co/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], true, false);
+
+-- container inherit + object inherit + inherit only -> container inherit + object inherit
+select acl_merge('{a/coi/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], true, false);
 
 -- container inherit + object inherit + no propagate inherit -> no flags
 select acl_merge('{a/cop/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], true, false);
+
+-- container inherit + object inherit + no propagate inherit + inherit only -> no flags
+select acl_merge('{a/copi/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], true, false);
 
 -- object
 
@@ -98,20 +116,38 @@ select acl_merge('{a/i/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_
 -- object inherit -> no flags
 select acl_merge('{a/o/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], false, false);
 
+-- object inherit + inherit only -> no flags
+select acl_merge('{a/oi/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], false, false);
+
 -- object inherit + no propagate inherit -> no flags
 select acl_merge('{a/op/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], false, false);
+
+-- object inherit + no propagate inherit + inherit only -> no flags
+select acl_merge('{a/opi/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], false, false);
 
 --container inherit -> not inherited
 select acl_merge('{a/c/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], false, false);
 
+--container inherit + inherit only -> not inherited
+select acl_merge('{a/ci/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], false, false);
+
 -- container inherit + no propagate inherit -> not inherited
 select acl_merge('{a/cp/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], false, false);
+
+-- container inherit + no propagate inherit + inherit only -> not inherited
+select acl_merge('{a/cpi/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], false, false);
 
 -- container inherit + object inherit -> no flags
 select acl_merge('{a/co/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], false, false);
 
+-- container inherit + object inherit + inherit only -> no flags
+select acl_merge('{a/coi/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], false, false);
+
 -- container inherit + object inherit + no propagate inherit -> no flags
 select acl_merge('{a/cop/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], false, false);
+
+-- container inherit + object inherit + no propagate inherit + inherit only -> no flags
+select acl_merge('{a/copi/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], false, false);
 
 -- skip inherited
 select acl_merge('{a/h/1=d}'::ace_int8[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int8[], false, false);
