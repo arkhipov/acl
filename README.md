@@ -298,12 +298,12 @@ types supported.
 And a set of `acl_check_` functions that are slightly different from the ones
 you have seen so far.
 
-  * `acl_check_access(ace_int4 acl, text mask, int4[] roles, bool implicit_allow)`
-  * `acl_check_access(ace_int4 acl, int4 mask, int4[] roles, bool implicit_allow)`
-  * `acl_check_access(ace_int8 acl, text mask, int8[] roles, bool implicit_allow)`
-  * `acl_check_access(ace_int8 acl, int4 mask, int8[] roles, bool implicit_allow)`
-  * `acl_check_access(ace_uuid acl, text mask, uuid[] roles, bool implicit_allow)`
-  * `acl_check_access(ace_uuid acl, int4 mask, uuid[] roles, bool implicit_allow)`
+  * `acl_check_access(ace_int4[] acl, text mask, int4[] roles, bool implicit_allow)`
+  * `acl_check_access(ace_int4[] acl, int4 mask, int4[] roles, bool implicit_allow)`
+  * `acl_check_access(ace_int8[] acl, text mask, int8[] roles, bool implicit_allow)`
+  * `acl_check_access(ace_int8[] acl, int4 mask, int8[] roles, bool implicit_allow)`
+  * `acl_check_access(ace_uuid[] acl, text mask, uuid[] roles, bool implicit_allow)`
+  * `acl_check_access(ace_uuid[] acl, int4 mask, uuid[] roles, bool implicit_allow)`
 
 The third parameter of these functions is an array of roles that your
 application considers the user has.
