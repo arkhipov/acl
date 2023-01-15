@@ -10,7 +10,10 @@
 #include "fmgr.h"
 
 #include "utils/builtins.h"
-#include "utils/int8.h"
+#if PG_VERSION_NUM >= 120000
+#else
+#	include "utils/int8.h"
+#endif
 
 #include "acl.h"
 #include "util.h"
