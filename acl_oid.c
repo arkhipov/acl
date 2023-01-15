@@ -391,7 +391,11 @@ Oid get_role_oid(const char *name, bool missing_ok)
 {
 	Oid			oid;
 
+#if PG_VERSION_NUM >= 120000
+	oid = GetSysCacheOid1(AUTHNAME, Anum_pg_type_oid, CStringGetDatum(name));
+#else
 	oid = GetSysCacheOid1(AUTHNAME, CStringGetDatum(name));
+#endif
 	if (!missing_ok && !OidIsValid(oid))
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
