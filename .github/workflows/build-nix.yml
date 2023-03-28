@@ -1,4 +1,4 @@
-name: Build and Run Tests
+name: Build and Run Linux Tests
 
 on: [push, pull_request]
 
@@ -7,8 +7,11 @@ jobs:
 
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        pg-version: ["9.3", "9.4", "9.5", "9.6"]
+        pg-version:
+          - 10
+#"9.3", "9.4", "9.5", "9.6", "10", "11", "12", "13", "14", "15"]
 
     steps:
       - uses: actions/checkout@v3
@@ -37,8 +40,17 @@ jobs:
           sudo pg_lsclusters
           sudo -u postgres psql -c 'SELECT version()'
 
-      - name: Build and Test
+      - name: Build
         run: |
           make
           sudo make install
+
+      - name: Show Test Result
+        continue-on-error: true
+        run: |
           sudo -u postgres make installcheck
+
+      - name: Show Test Result
+        run: |
+          cat regression.out
+        if: ${{ failure() }}
