@@ -2,7 +2,7 @@
  *
  * acl_int8.c
  *
- * Copyright (c) 2015-2016 Vladislav Arkhipov <vlad@arkhipov.ru>
+ * Copyright (c) 2015-2023 Vladislav Arkhipov <vlad@arkhipov.ru>
  *
  * -------------------------------------------------------------------------
  */
