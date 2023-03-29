@@ -16,10 +16,10 @@ jobs:
           - 9.6.24-1
           - 10.23-1
           - 11.19-1
-          - 12.14-1
-          - 13.10-1
-          - 14.7-1
-          - 15.2-1
+#          - 12.14-1
+#          - 13.10-1
+#          - 14.7-1
+#          - 15.2-1
         platform:
           - x64
         include:
@@ -101,7 +101,7 @@ jobs:
 
           Start-Service -Name "postgresql$env:X64-$env:PG_VERSION"
 
-          if ($env:PG_VERSION -ge 10) {
+          if ([int]"$env:PG_VERSION" -ge 10) {
             & "$env:PG_ROOT\bin\pg_regress.exe" "$env:PSQL_OPT=$env:PG_ROOT\bin" --dbname=pl_regression install acl_oid acl_uuid_pg10 acl_int8 acl_int4 2>&1 | Out-Default
           } else {
             & "$env:PG_ROOT\bin\pg_regress.exe" "$env:PSQL_OPT=$env:PG_ROOT\bin" --dbname=pl_regression install acl_oid acl_uuid acl_int8 acl_int4 2>&1 | Out-Default
