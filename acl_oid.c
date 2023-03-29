@@ -63,7 +63,7 @@ static void format_who(StringInfo out, intptr_t opaque);
 static AclEntryBase *extract_acl_entry_base(void *entry);
 static bool who_matches(void *entry, intptr_t who);
 
-static Oid get_role_oid(const char *name, bool missing_ok);
+static Oid _get_role_oid(const char *name, bool missing_ok);
 
 Datum
 ace_in(PG_FUNCTION_ARGS)
@@ -196,7 +196,7 @@ acl_check_access_int4_name(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 
 	rolename = PG_GETARG_NAME(2);
-	who = get_role_oid(NameStr(*rolename), false);
+	who = _get_role_oid(NameStr(*rolename), false);
 
 	PG_RETURN_UINT32(check_access(acl, ACL_TYPE_LENGTH, ACL_TYPE_ALIGNMENT,
 								  extract_acl_entry_base, mask,
@@ -221,7 +221,7 @@ acl_check_access_text_name(PG_FUNCTION_ARGS)
 		PG_RETURN_NULL();
 
 	rolename = PG_GETARG_NAME(2);
-	who = get_role_oid(NameStr(*rolename), false);
+	who = _get_role_oid(NameStr(*rolename), false);
 
 	PG_RETURN_TEXT_P(check_access_text_mask(acl, ACL_TYPE_LENGTH,
 											ACL_TYPE_ALIGNMENT,
@@ -313,7 +313,7 @@ parse_who(const char *s, void *opaque)
 		else
 		{
 			name[len] = '\0';
-			oid = get_role_oid(name, true);
+			oid = _get_role_oid(name, true);
 
 			if (!OidIsValid(oid))
 				acl_entry->base.flags |= ACE_INVALID;
@@ -387,11 +387,15 @@ who_matches(void *entry, intptr_t who)
 }
 
 static
-Oid get_role_oid(const char *name, bool missing_ok)
+Oid _get_role_oid(const char *name, bool missing_ok)
 {
 	Oid			oid;
 
-	oid = GetSysCacheOid1(AUTHNAME, CStringGetDatum(name));
+#if PG_VERSION_NUM >= 120000
+  oid = GetSysCacheOid1(AUTHNAME, Anum_pg_type_oid, CStringGetDatum(name));
+#else
+  oid = GetSysCacheOid1(AUTHNAME, CStringGetDatum(name));
+#endif
 	if (!missing_ok && !OidIsValid(oid))
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
