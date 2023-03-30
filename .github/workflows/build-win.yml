@@ -129,7 +129,7 @@ jobs:
           Copy ".\*.sql" ".\package\share\extension"
           Copy ".\*.control" ".\package\share\extension"
 
-          Compress-Archive -Path ".\package\*" -DestinationPath acl-pg${{ env.PG_VERSION }}${{ env.X64 }}.zip
+          Compress-Archive -Path ".\package\*" -DestinationPath acl-pg${{ env.PG_VERSION }}-${{ matrix.platform }}.zip
 
       - name: Deploy Artifacts
         uses: softprops/action-gh-release@v1
