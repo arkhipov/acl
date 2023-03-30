@@ -39,7 +39,7 @@ check_access_extract_args(FunctionCallInfo fcinfo, ArrayType **acl,
 				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
 				 errmsg("allow_implicit argument must be not null")));
 
-	*implicit_allow = PG_GETARG_BOOL(3);
+	*implicit_allow = PG_GETARG_BOOL(has_who_argument ? 3 : 2);
 
 	return true;
 }
@@ -74,7 +74,7 @@ check_access_text_mask_extract_args(FunctionCallInfo fcinfo, ArrayType **acl,
 				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
 				 errmsg("allow_implicit argument must be not null")));
 
-	*implicit_allow = PG_GETARG_BOOL(3);
+	*implicit_allow = PG_GETARG_BOOL(has_who_argument ? 3 : 2);
 
 	return true;
 }
