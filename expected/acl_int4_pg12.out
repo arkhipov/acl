@@ -1,0 +1,463 @@
+-- ACL format checks
+select ''::ace_int4;
+ERROR:  missing ACE type
+LINE 1: select ''::ace_int4;
+               ^
+select 'a'::ace_int4;
+ERROR:  missing "/" sign
+LINE 1: select 'a'::ace_int4;
+               ^
+select 'q'::ace_int4;
+ERROR:  invalid ACE type: must be one of "ad"
+LINE 1: select 'q'::ace_int4;
+               ^
+select 'a*'::ace_int4;
+ERROR:  missing "/" sign
+LINE 1: select 'a*'::ace_int4;
+               ^
+select 'a/'::ace_int4;
+ERROR:  missing ACE flags
+LINE 1: select 'a/'::ace_int4;
+               ^
+select 'a/hq'::ace_int4;
+ERROR:  invalid ACE flag: must be one of "hpcoi0123456789ABCDEFGHIJKLMNOP"
+LINE 1: select 'a/hq'::ace_int4;
+               ^
+select 'a/h'::ace_int4;
+ERROR:  missing "/" sign
+LINE 1: select 'a/h'::ace_int4;
+               ^
+select 'a/h/'::ace_int4;
+ERROR:  missing ACE who
+LINE 1: select 'a/h/'::ace_int4;
+               ^
+select 'a/h/='::ace_int4;
+ERROR:  invalid input syntax for type integer: ""
+LINE 1: select 'a/h/='::ace_int4;
+               ^
+select 'a/h/1='::ace_int4;
+ERROR:  missing ACE mask
+LINE 1: select 'a/h/1='::ace_int4;
+               ^
+select 'a/h/1=d,'::ace_int4;
+ERROR:  invalid ACE mask: must be one of "scdwr0123456789ABCDEFGHIJKLMNOPQ"
+LINE 1: select 'a/h/1=d,'::ace_int4;
+               ^
+select 'a/h/1=dw'::ace_int4;
+ ace_int4 
+----------
+ a/h/1=dw
+(1 row)
+
+select 'a/ihpc/1=wdddw'::ace_int4;
+  ace_int4   
+-------------
+ a/hpci/1=dw
+(1 row)
+
+select 'd/ihpc/1=wdddw'::ace_int4;
+  ace_int4   
+-------------
+ d/hpci/1=dw
+(1 row)
+
+select 'd/ihpc/-2147483648=wdddw'::ace_int4;
+       ace_int4        
+-----------------------
+ d/hpci/-2147483648=dw
+(1 row)
+
+select 'd/ihpc/2147483647=wdddw'::ace_int4;
+       ace_int4       
+----------------------
+ d/hpci/2147483647=dw
+(1 row)
+
+select 'a/ihpc/blah"=dw0'::ace_int4;
+ERROR:  invalid input syntax for type integer: ""
+LINE 1: select 'a/ihpc/blah"=dw0'::ace_int4;
+               ^
+select 'd/ihpc/21474836480=wdddw'::ace_int4;
+ERROR:  value "21474836480" is out of range for type integer
+LINE 1: select 'd/ihpc/21474836480=wdddw'::ace_int4;
+               ^
+select 'd/ihpc/214748364800=wdddw'::ace_int4;
+ERROR:  int4 too long
+LINE 1: select 'd/ihpc/214748364800=wdddw'::ace_int4;
+               ^
+-- check access
+select coalesce(acl_check_access('{}'::ace_int4[], 'sd0', '{3, 2}'::int4[], false), 'NULL');
+ coalesce 
+----------
+ 
+(1 row)
+
+select coalesce(acl_check_access('{}'::ace_int4[], 'sd0', '{3, 2}'::int4[], true), 'NULL');
+ coalesce 
+----------
+ 0sd
+(1 row)
+
+select coalesce(acl_check_access(null::ace_int4[], 'sd0', '{3, 2}'::int4[], false), 'NULL');
+ coalesce 
+----------
+ 
+(1 row)
+
+select coalesce(acl_check_access(null::ace_int4[], 'sd0', '{3, 2}'::int4[], true), 'NULL');
+ coalesce 
+----------
+ 0sd
+(1 row)
+
+select coalesce(acl_check_access(null::ace_int4[], 'sd0', '{}'::int4[], false), 'NULL');
+ coalesce 
+----------
+ 
+(1 row)
+
+select coalesce(acl_check_access(null::ace_int4[], 'sd0', '{}'::int4[], true), 'NULL');
+ coalesce 
+----------
+ 0sd
+(1 row)
+
+select coalesce(acl_check_access(null::ace_int4[], 'sd0', null::int4[], false), 'NULL');
+ coalesce 
+----------
+ NULL
+(1 row)
+
+select coalesce(acl_check_access(null::ace_int4[], 'sd0', null::int4[], true), 'NULL');
+ coalesce 
+----------
+ NULL
+(1 row)
+
+select acl_check_access('{}'::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int4[], false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00000000000000000000000000000000
+(1 row)
+
+select acl_check_access('{}'::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int4[], true)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00101000000000000000000000000001
+(1 row)
+
+select acl_check_access(null::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int4[], false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00000000000000000000000000000000
+(1 row)
+
+select acl_check_access(null::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int4[], true)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00101000000000000000000000000001
+(1 row)
+
+select acl_check_access(null::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{}'::int4[], false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00000000000000000000000000000000
+(1 row)
+
+select acl_check_access(null::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{}'::int4[], true)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00101000000000000000000000000001
+(1 row)
+
+select acl_check_access(null::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), null::int4[], false)::bit(32);
+ acl_check_access 
+------------------
+ 
+(1 row)
+
+select acl_check_access(null::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), null::int4[], true)::bit(32);
+ acl_check_access 
+------------------
+ 
+(1 row)
+
+select coalesce(acl_check_access('{d//1=w,d//2=s,a//2=sdw,a//3=0}'::ace_int4[], 'sdc0', '{3, 2}'::int4[], false), 'NULL');
+ coalesce 
+----------
+ 0d
+(1 row)
+
+select coalesce(acl_check_access('{d//1=w,d//2=s,a//2=sdw,a//3=0}'::ace_int4[], 'sdc0', '{3, 2}'::int4[], true), 'NULL');
+ coalesce 
+----------
+ 0cd
+(1 row)
+
+select acl_check_access('{d//1=w,d//2=s,a//2=sdw,a//3=0}'::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int4[], false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00100000000000000000000000000001
+(1 row)
+
+select acl_check_access('{d//1=w,d//2=s,a//2=sdw,a//3=0}'::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int4[], true)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00100000000000000000000000000001
+(1 row)
+
+select coalesce(acl_check_access(null::ace_int4[], 'sd0', '{}'::int4[], null), 'NULL');
+ERROR:  allow_implicit argument must be not null
+select acl_check_access(null::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{}'::int4[], null)::bit(32);
+ERROR:  allow_implicit argument must be not null
+-- inherit only
+select acl_check_access('{d//1=w,d/i/2=s,a//2=sdw,a//3=0}'::ace_int4[], 'sd0', '{3, 2}'::int4[], false);
+ acl_check_access 
+------------------
+ 0sd
+(1 row)
+
+select acl_check_access('{d//1=w,d/i/2=s,a//2=sdw,a//3=0}'::ace_int4[], (1 << 0) | (1 << 27) | (1 << 29), '{3, 2}'::int4[], false)::bit(32);
+         acl_check_access         
+----------------------------------
+ 00101000000000000000000000000001
+(1 row)
+
+-- merge
+select acl_merge(null::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+           acl_merge            
+--------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4}
+(1 row)
+
+select acl_merge(null::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, true);
+           acl_merge            
+--------------------------------
+ {d//0=1,d//0=4,a//0=0,a//0=23}
+(1 row)
+
+select acl_merge(null::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+           acl_merge            
+--------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4}
+(1 row)
+
+select acl_merge(null::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, true);
+           acl_merge            
+--------------------------------
+ {d//0=1,d//0=4,a//0=0,a//0=23}
+(1 row)
+
+-- inheritance
+-- container
+-- no flags -> not inherited
+select acl_merge('{a//1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+           acl_merge            
+--------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4}
+(1 row)
+
+-- inherit only -> not inherited
+select acl_merge('{a/i/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+           acl_merge            
+--------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4}
+(1 row)
+
+-- object inherit -> inherit only + object inherit
+select acl_merge('{a/o/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+                acl_merge                 
+------------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/hoi/1=d}
+(1 row)
+
+-- inherit only + object inherit -> inherit only + object inherit
+select acl_merge('{a/io/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+                acl_merge                 
+------------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/hoi/1=d}
+(1 row)
+
+-- object inherit + no propagate inherit -> no inheritance
+select acl_merge('{a/op/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+           acl_merge            
+--------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4}
+(1 row)
+
+-- inherit only + object inherit + no propagate inherit -> no inheritance
+select acl_merge('{a/iop/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+           acl_merge            
+--------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4}
+(1 row)
+
+-- container inherit -> container inherit
+select acl_merge('{a/c/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+                acl_merge                
+-----------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/hc/1=d}
+(1 row)
+
+-- inherit only + container inherit -> container inherit
+select acl_merge('{a/ic/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+                acl_merge                
+-----------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/hc/1=d}
+(1 row)
+
+-- container inherit + no propagate inherit -> no flags
+select acl_merge('{a/cp/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+               acl_merge                
+----------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/h/1=d}
+(1 row)
+
+-- inherit only + container inherit + no propagate inherit -> no flags
+select acl_merge('{a/icp/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+               acl_merge                
+----------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/h/1=d}
+(1 row)
+
+-- container inherit + object inherit -> container inherit + object inherit
+select acl_merge('{a/co/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+                acl_merge                 
+------------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/hco/1=d}
+(1 row)
+
+-- inherit only + container inherit + object inherit -> container inherit + object inherit
+select acl_merge('{a/ico/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+                acl_merge                 
+------------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/hco/1=d}
+(1 row)
+
+-- container inherit + object inherit + no propagate inherit -> no flags
+select acl_merge('{a/cop/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+               acl_merge                
+----------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/h/1=d}
+(1 row)
+
+-- inherit only + container inherit + object inherit + no propagate inherit -> no flags
+select acl_merge('{a/icop/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+               acl_merge                
+----------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/h/1=d}
+(1 row)
+
+-- skip inherited
+select acl_merge('{a/h/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], true, false);
+           acl_merge            
+--------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4}
+(1 row)
+
+-- object
+-- no flags -> not inherited
+select acl_merge('{a//1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+           acl_merge            
+--------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4}
+(1 row)
+
+-- inherit only -> not inherited
+select acl_merge('{a/i/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+           acl_merge            
+--------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4}
+(1 row)
+
+-- object inherit -> no flags
+select acl_merge('{a/o/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+               acl_merge                
+----------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/h/1=d}
+(1 row)
+
+-- inherit only + object inherit -> no flags
+select acl_merge('{a/io/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+               acl_merge                
+----------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/h/1=d}
+(1 row)
+
+-- object inherit + no propagate inherit -> no flags
+select acl_merge('{a/op/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+               acl_merge                
+----------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/h/1=d}
+(1 row)
+
+-- inherit only + object inherit + no propagate inherit -> no flags
+select acl_merge('{a/iop/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+               acl_merge                
+----------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/h/1=d}
+(1 row)
+
+-- container inherit -> not inherited
+select acl_merge('{a/c/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+           acl_merge            
+--------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4}
+(1 row)
+
+-- inherit only + container inherit -> not inherited
+select acl_merge('{a/ic/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+           acl_merge            
+--------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4}
+(1 row)
+
+-- container inherit + no propagate inherit -> not inherited
+select acl_merge('{a/cp/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+           acl_merge            
+--------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4}
+(1 row)
+
+-- inherit only + container inherit + no propagate inherit -> not inherited
+select acl_merge('{a/icp/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+           acl_merge            
+--------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4}
+(1 row)
+
+-- container inherit + object inherit -> no flags
+select acl_merge('{a/co/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+               acl_merge                
+----------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/h/1=d}
+(1 row)
+
+-- inherit only + container inherit + object inherit -> no flags
+select acl_merge('{a/ico/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+               acl_merge                
+----------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/h/1=d}
+(1 row)
+
+-- container inherit + object inherit + no propagate inherit -> no flags
+select acl_merge('{a/cop/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+               acl_merge                
+----------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/h/1=d}
+(1 row)
+
+-- inherit only + container inherit + object inherit + no propagate inherit -> no flags
+select acl_merge('{a/icop/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+               acl_merge                
+----------------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4,a/h/1=d}
+(1 row)
+
+-- skip inherited
+select acl_merge('{a/h/1=d}'::ace_int4[], '{a//0=0,d//0=1,a//0=23,d//0=4}'::ace_int4[], false, false);
+           acl_merge            
+--------------------------------
+ {a//0=0,d//0=1,a//0=23,d//0=4}
+(1 row)
+
