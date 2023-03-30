@@ -14,7 +14,9 @@ DOCS = acl.md
 PG_CONFIG = pg_config
 PG_VERSION := $(shell $(PG_CONFIG) --version | cut -d '.' -f 1 | cut -d ' ' -f 2)
 
-ifeq ($(shell test $(PG_VERSION) -ge 10; echo $$?), 0)
+ifeq ($(shell test $(PG_VERSION) -ge 12; echo $$?), 0)
+  REGRESS = install acl_oid acl_uuid_pg10 acl_int8_pg12 acl_int4_pg12
+else ifeq ($(shell test $(PG_VERSION) -ge 10; echo $$?), 0)
   REGRESS = install acl_oid acl_uuid_pg10 acl_int8 acl_int4
 else
   REGRESS = install acl_oid acl_uuid acl_int8 acl_int4
