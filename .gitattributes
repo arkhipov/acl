@@ -1,1 +1,4 @@
 *.vcxproj text eol=crlf
+*.sln export-ignore
+*.vcx* export-ignore
+.* export-ignore

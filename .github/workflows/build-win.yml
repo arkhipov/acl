@@ -108,6 +108,7 @@ jobs:
           } else {
             & "$env:PG_ROOT\bin\pg_regress.exe" "$env:PSQL_OPT=$env:PG_ROOT\bin" --dbname=pl_regression install acl_oid acl_uuid acl_int8 acl_int4 2>&1 | Out-Default
           }
+
           if ($LASTEXITCODE -ne 0) {
             Get-Content -Path ".\regression.diffs" | Out-Printer
             Write-Error "Tests failed"
@@ -135,5 +136,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
+          fail_on_unmatched_files: true
           files: |
             acl-pg${{ env.PG_VERSION }}-${{ matrix.platform }}.zip
