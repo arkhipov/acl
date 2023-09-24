@@ -2,7 +2,7 @@
    "name": "acl",
    "abstract": "Acess Control List (ACL) Extension",
    "description": "This extension provides support for ACL type.",
-   "version": "1.0.3",
+   "version": "1.0.4",
    "release_status": "stable",
    "maintainer": [
       "Vladislav Arkhipov <vlad@arkhipov.ru>"
@@ -11,9 +11,9 @@
    "provides": {
       "acl": {
          "abstract": "Access Control List (ACL) Extension",
-         "file": "acl--1.0.3.sql",
+         "file": "acl--1.0.4.sql",
          "docfile": "acl.md",
-         "version": "1.0.3"
+         "version": "1.0.4"
       }
    },
    "prereqs": {
@@ -24,7 +24,7 @@
       }
    },
    "resources": {
-      "homepage": "http://www.softus.org",
+      "homepage": "https://arkhipov.ru",
       "repository": {
          "url": "https://github.com/arkhipov/acl.git",
          "web": "https://github.com/arkhipov/acl",

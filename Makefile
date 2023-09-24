@@ -6,10 +6,11 @@ OBJS = acl.o acl_oid.o acl_uuid.o acl_int8.o acl_int4.o util.o
 PG_CPPFLAGS=-Wall
 
 EXTENSION = acl
-DATA = acl--1.0.3.sql \
+DATA = acl--1.0.4.sql \
        acl--1.0.0--1.0.1.sql \
        acl--1.0.1--1.0.2.sql \
-       acl--1.0.2--1.0.3.sql
+       acl--1.0.2--1.0.3.sql \
+       acl--1.0.3--1.0.4.sql
 DOCS = acl.md
 
 PG_CONFIG = pg_config

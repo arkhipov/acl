@@ -10,3 +10,6 @@ Version 1.0.2, released 2016-06-12
 Version 1.0.3, released 2023-03-30
   - fixed bug in acl_extract_arguments with implicit_allow argument value ignored
   - support for PostgreSQL 10+
+
+Version 1.0.4, released 2023-09-24
+  - support for PostgreSQL 16

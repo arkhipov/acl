@@ -1,4 +1,4 @@
-/* acl/acl--1.0.3.sql */
+/* acl/acl--1.0.4.sql */
 
 -- complain if script is sourced in psql, rather than via CREATE EXTENSION
 \echo Use "CREATE EXTENSION acl" to load this file.\quit
